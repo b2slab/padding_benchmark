@@ -213,6 +213,33 @@ def encoding_as_multilabel(df, folder):
 
 
 # faltan las funciones para cuando solo hay enzimas
-def keeping_indices_enzymes():
+def keeping_indices_enzymes(df, idx_train, idx_val, idx_test, folder, kfold=False):
+    """Re-creates again training, validation and test sets only with enzymes"""
+    #keeping only indices from enzymes
+    indices_enzyme = [idx for idx, x in enumerate(list(df["enzyme"])) if x==1.0]
+    #keeping only enzyme indices for each set
+    enz_idx_train = [i for i in idx_train if i in indices_enzyme]
+    enz_idx_val = [i for i in idx_val if i in indices_enzyme]
+    enz_idx_test = [i for i in idx_test if i in indices_enzyme]
     
-#same but for augmented data
+    file_idcs_new = os.path.join(absPath, 'data/', folder, 'idcs_split_enzyme.pickle')
+    if kfold == False:
+        with open(file_idcs_new, "wb") as output_file:
+            pickle.dump((enz_idx_train, enz_idx_val, enz_idx_test), output_file)
+    else:
+        return (enz_idx_train, enz_idx_val, enz_idx_test)
+    
+def keeping_indices_enzymes_recursively(list_kfolds, df):
+    """If there are k sets of indices, goes iteratively over them to keep only the corresponding to enzymes"""
+    enzymes_indices = []
+    for i in list_kfolds:
+        idx_train, idx_val, idx_test = i
+        enzymes_indices.append(keeping_indices_enzymes(df, idx_train, idx_val, idx_test, kfold=True))
+        file_idcs_new = os.path.join(absPath, 'data/', folder, 'idcs_split_enzyme.pickle')
+        with open(file_idcs_new, "wb") as output_file:
+            pickle.dump(enzymes_indices, output_file)
+            
+def keeping_indices_enzymes_augmented(data, labels_task1, labels_task2):
+    """Keeping only enzymes indices for a certain set of augmented data"""
+    idx_enz = [idx for idx,x in enumerate(list(labels_task1.argmax(-1))) if x==1.0]
+    return idx_enz
