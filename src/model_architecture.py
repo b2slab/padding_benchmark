@@ -24,7 +24,7 @@ from keras.backend.tensorflow_backend import set_session
 absPath = '/home/angela/padding_EBI/'
 sys.path.insert(0, absPath)
 
-from src.Target import preprocessing
+from src.Target import Target
 
 np.random.seed(8)
 random.seed(8)

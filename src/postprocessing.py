@@ -222,12 +222,12 @@ def giffing_weights(folder, layers, model_type):
                 fig
             else:
                 nice_imshow(pl.gca(), make_mosaic(w, 5, 2), vmin=-0.5, vmax=0.5, cmap=cm.bwr)
-            if not os.path.exists(''.join(string for string in [absPath, 'data/weights/', folder, '/', model_type, '/gifs/', i]):
-                os.makedirs(''.join(string for string in [absPath, 'data/weights/', folder, '/', model_type, '/gifs/', i])
+            if not os.path.exists(''.join(string for string in [absPath, 'data/weights/', folder, '/', model_type, '/gifs/', i])):
+                os.makedirs(''.join(string for string in [absPath, 'data/weights/', folder, '/', model_type, '/gifs/', i]))
             fig.savefig(os.path.join(''.join(string for string in [absPath, 'data/weights/', folder, '/', model_type, '/gifs/', i, '/', i, '_', names_epoch[index], '.png'])))
             pl.close(fig)
         pathh = os.path.join(''.join(string for string in [absPath, 'data/weights/', folder, '/', model_type, '/gifs/', i, '/*.png']))
         pathh_gif = os.path.join(''.join(string for string in [absPath, 'data/weights/',  folder, '/', model_type, '/gifs/', i, '/', i, '.gif']))
-        !convert -delay 40 "{pathh}" "{pathh_gif}"                     
+        ! convert -delay 40 "{pathh}" "{pathh_gif}"                     
     
     

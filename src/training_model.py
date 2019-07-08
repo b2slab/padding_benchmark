@@ -55,20 +55,20 @@ def loading_val_data(x_name, y_name, i_val, h5_file):
 
 def count_time(start, end, folder, model_type):
     """Count the time the model takes to run and save it to a file"""
-    print("It has been ", str(datetime.timedelta(seconds=(end - start)))
+    print("It has been ", str(datetime.timedelta(seconds=(end - start))))
     timee = (end - start)/3600
     #if the folder doesn't exist, create it
-    if not os.path.exists(''.join(string for string in [absPath, 'data/results', folder, '/', model_type]):
-        os.makedirs(''.join(string for string in [absPath, 'data/results', folder, '/', model_type])
+    if not os.path.exists(''.join(string for string in [absPath, 'data/results', folder, '/', model_type])):
+        os.makedirs(''.join(string for string in [absPath, 'data/results', folder, '/', model_type]))
     file_time = ''.join(string for string in [absPath, 'data/results', folder, '/', model_type, '/time.pickle'])
 
     with open(file_time, "wb") as output_file:
-        pickle.dump(file_time, output_file)
+        pickle.dump(timee, output_file)
 
 def saving_results(f1s, model_type, folder):
     """Saving F1-score and history"""
-    if not os.path.exists(''.join(string for string in [absPath, 'data/results', folder, '/', model_type]):
-        os.makedirs(''.join(string for string in [absPath, 'data/results', folder, '/', model_type])
+    if not os.path.exists(''.join(string for string in [absPath, 'data/results', folder, '/', model_type])):
+        os.makedirs(''.join(string for string in [absPath, 'data/results', folder, '/', model_type]))
                     
     file_f1 = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/f1_score.pickle'])
     with open(file_f1, "wb") as output_file:

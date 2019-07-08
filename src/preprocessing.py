@@ -132,7 +132,6 @@ def data_to_hdf5(saving_path, list_x, list_vars, labels_task1=None, labels_task2
     """ Saving encoded data to HDF5"""
     if len(list_x) != len(list_vars):
         print("list_x and list_vars should have the same length")
-        break
     else:
         file_h5 = os.path.join(absPath, 'data/', saving_path)
         h5_bin = h5py.File(file_h5, 'w')
