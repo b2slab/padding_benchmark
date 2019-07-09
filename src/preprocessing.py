@@ -19,7 +19,7 @@ from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 from collections import Counter
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedShuffleSplit
 
 #root
 absPath = '/home/angela/padding_EBI/'
@@ -102,7 +102,7 @@ def splitting_sets(training_split, val_split, data, labels, folder, kfold_bool, 
             X_valtest, y_valtest = data[valtest_index], labels[valtest_index]
             #then I define a new splitter for dividing test+validation (n_splits=1)
             ooo = StratifiedShuffleSplit(n_splits=1, test_size=val_split, random_state=0)
-            val_index, test_index = ooo.split(X_valtest, y_valtest)
+            val_index, test_index = next(ooo.split(X_valtest, y_valtest))
             real_val_idx = [valtest_index[i] for i in val_index]
             real_test_idx = [valtest_index[i] for i in test_index]
             k_indices.append((train_index, real_val_idx, real_test_idx))
@@ -131,18 +131,20 @@ def creating_augmented_data(vars_padding, labels_task1, indices, labels_task2 = 
     else:
         return seqs_shuf, task1_shuf, task2_shuf        
 
-def data_to_hdf5(saving_path, list_x, list_vars, labels_task1=None, labels_task2=None):
+def data_to_hdf5(saving_path, name_file, list_x, dicti_padding, labels_task1=None, labels_task2=None):
     """ Saving encoded data to HDF5"""
-    if len(list_x) != len(list_vars):
+    if len(list_x) != len(dicti_padding):
         print("list_x and list_vars should have the same length")
     else:
-        file_h5 = os.path.join(absPath, 'data/', saving_path)
+        if not os.path.exists("".join([absPath, 'data/', saving_path])):
+            os.makedirs("".join([absPath, 'data/', saving_path]))
+        file_h5 = os.path.join(absPath, 'data/', saving_path, name_file)
         h5_bin = h5py.File(file_h5, 'w')
-        for i in range(len(list_x)):
-            h5_bin.create_dataset(list_x[i], data=list_vars[i])
-        if labels_task1 != None:
+        for i in list_x:
+            h5_bin.create_dataset(i, data=dicti_padding[i])
+        if isinstance(labels_task1, np.ndarray):
             h5_bin.create_dataset('labels_task1', data=labels_task1)
-        if labels_task2 != None:
+        if isinstance(labels_task2, np.ndarray):
             h5_bin.create_dataset('labels_task2', data=labels_task2)
         h5_bin.close()
             
@@ -164,6 +166,7 @@ def first_digit_EC(df):
     df['digit1'] = [[i.split('.')[0] for i in row['digit1']] for _, row in df.iterrows()]
     #if it is always the same number: keep it only once. 
     df['digit1'] = [list(set(row['digit1'])) for _, row in df.iterrows()]
+    return df
 
     
 def counting_multilabel(df):
@@ -175,14 +178,20 @@ def counting_multilabel(df):
     labels_separated = df.digit1.apply(pd.Series)
     #first label
     first_label = dict(Counter(labels_separated.loc[:,0]))
+    #print(first_label)
     #second label (most of instances don't have a second label so we have to filter nans)
-    second_label = dict(Counter(labels_separated.loc[:,1]))
-    second_label.pop(np.nan, None)
-    #Joining all the labels to plot an histogram
-    new_dict = { k: first_label.get(k, 0) + second_label.get(k, 0) for k in set(first_label) | set(second_label) }
+    if sum(float(num) >1 for num in numlabels) != 0:
+        second_label = dict(Counter(labels_separated.loc[:,1]))
+        #print(second_label)
+        second_label.pop(np.nan, None)
+        #Joining all the labels to plot an histogram
+        new_dict = { k: first_label.get(k, 0) + second_label.get(k, 0) for k in set(first_label) | set(second_label) }
+        #print(new_dict)
+    else: 
+        new_dict = first_label
     unique_ecs = list(labels_separated[0].unique())
     print("The unique labels are ", unique_ecs)
-    plt.bar(list(new_dict.keys()), new_dict.values(), color='g')
+    plt.bar(range(len(list(new_dict.keys()))), list(new_dict.values()), color='g', tick_label=list(new_dict.keys()))
     plt.title("Histogram of firsts digits of EC number (nan are not enzymes)")
     plt.show()
 
@@ -197,15 +206,17 @@ def encoding_as_multilabel(df, folder):
     ec_multi = mlb.fit_transform(ec_filtered)
     print(mlb.classes_.shape)    
     # Saving max_len to a pickle
+    if not os.path.exists("".join([absPath, 'data/', folder])):
+        os.makedirs("".join([absPath, 'data/', folder]))
     file_mlb = os.path.join(absPath, 'data/', folder, 'mlb.pickle')
     with open(file_mlb, "wb") as output_file:
         pickle.dump(mlb, output_file)
     #mixing nans with encoded labels for task2
     new_list = []
     counter = 0
-    for idx,i in enumerate(list(range(len(archaea_filt.digit1)))):
+    for idx,i in enumerate(list(range(len(df.digit1)))):
         if idx not in idcs_enz:
-            new_list.append(np.array([0, 0, 0, 0, 0, 0, 0]))
+            new_list.append(np.array([0 for i in range(mlb.classes_.shape[0])]))
         else:
             new_list.append(list(ec_multi)[counter])
             counter = counter+1
