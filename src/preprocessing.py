@@ -117,14 +117,14 @@ def creating_augmented_data(vars_padding, labels_task1, indices, folder, name_fi
                             labels_task2 = None, kfold_bool = False):
     """creating augmented data from all the types of padding from a specific set of indices"""
     #creating idx of the length of data
-    idx_data = len(vars_padding[0])
+    idx_data = list(range(len(vars_padding['post_padding'])))
     #creating empty list for sequences and labels
     seqs, lbl_task1, lbl_task2 = [],[],[]
     #joining the paddings
     for idx in idx_data:
-        for padding_type in vars_padding:
-            seqs.append(padding_type[idx]), lbl_task1.append(labels_task1[idx])
-            if labels_task2 != None:
+        for padding_type, value in vars_padding.items():
+            seqs.append(value[idx]), lbl_task1.append(labels_task1[idx])
+            if isinstance(labels_task2, np.ndarray): 
                 lbl_task2.append(labels_task2[idx])
     #saving data
     if not os.path.exists("".join([absPath, 'data/', folder])):
@@ -148,6 +148,7 @@ def creating_augmented_data(vars_padding, labels_task1, indices, folder, name_fi
                    for idx,x in enumerate(i_val)]))
         new_i_test = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
                    for idx,x in enumerate(i_test)]))
+        random.shuffle(new_i_train), random.shuffle(new_i_val), random.shuffle(new_i_test)
         file_idcs = os.path.join(absPath, 'data/', folder, 'idcs_aug_split.pickle')
         with open(file_idcs, "wb") as output_file:
             pickle.dump((new_i_train, new_i_val, new_i_test), output_file)
@@ -161,6 +162,7 @@ def creating_augmented_data(vars_padding, labels_task1, indices, folder, name_fi
                    for idx,x in enumerate(i_val)]))
             new_i_test = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
                    for idx,x in enumerate(i_test)]))
+            random.shuffle(new_i_train), random.shuffle(new_i_val), random.shuffle(new_i_test)
             k_indices.append((new_i_train, new_i_val, new_i_test))
         file_idcs = os.path.join(absPath, 'data/', folder, 'idcs_aug_split.pickle')
         with open(file_idcs, "wb") as output_file:
