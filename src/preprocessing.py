@@ -22,7 +22,7 @@ from collections import Counter
 from sklearn.model_selection import StratifiedKFold
 
 #root
-absPath = '/home/angela/padding_uniprot/'
+absPath = '/home/angela/padding_EBI/'
 sys.path.insert(0, absPath)
 
 from src.Target import Target
@@ -47,7 +47,7 @@ def looking_max_len(df, quan=0.9):
     seq_len.hist(bins=40)
     #we compute the sequence length which covers quan percentage of the proteins
     quan_len = seq_len.quantile(quan)
-    return max_len, quan_len
+    return max_len, int(quan_len)
 
 def filtering_over_maxlen(df, max_len):
     """"Filter sequences over the established max_len"""
@@ -62,18 +62,21 @@ def creating_dict():
     return aa_to_int
 
 #vamos a dejar el onehot para el batch generator pot si hay muchos datos
-def processing_sequences(df, type_padding):
+def processing_sequences(df, type_padding, max_len):
     """ Processing amino acid sequences to an array of padded integers"""
+    padding_short = type_padding.split("_")[0]
     #Converting sequence to Target
     df['target']= df['Sequence'].apply(lambda x: Target(x))
     #Creating one target for getting the dictionary
     instarget = Target('AAAAA')
+    aa_to_int = creating_dict()
     #1st: we pad the sequences to the chosen max_len, with the strategy defined in type_padding
-    seqs_padded = df['target'].apply(lambda x: x.padding_seq_position(max_len, type_padding))
+    seqs_padded = df['target'].apply(lambda x: x.padding_seq_position(max_len, padding_short))
     # 2nd: we convert amino acid sequences to integer sequences
+    print(seqs_padded)
     seqs_int = [instarget.string_to_int(x, aa_to_int) for x in seqs_padded]
     #this is simply to convert it to an array, I am NOT padding again
-    seqs_int_array = sequence.pad_sequences(sequences=seqs_int_post, maxlen=max_len)
+    seqs_int_array = sequence.pad_sequences(sequences=seqs_int, maxlen=max_len)
     return seqs_int_array
 
 def splitting_sets(training_split, val_split, data, labels, folder, kfold_bool, n_splits=None):

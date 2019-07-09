@@ -61,7 +61,7 @@ class Target(object):
         return seq
     
     def padding_seq_position(self, max_len, pad_type="post"):
-        """ Pads the sequence pre/post/mid """
+        """ Pads the sequence pre/post/mid/stretch/ext/rdm """
         prot_string = self.seq
         prot_len = len(prot_string)
         diflen = max_len - prot_len
@@ -78,6 +78,7 @@ class Target(object):
             return padded_seq
         elif pad_type =="stretch":
             padded_seq = self.stretching_seq(prot_string, max_len)
+            return padded_seq
         elif pad_type == "ext":
             zeross = '0' * int(diflen/2)
             if diflen%2 == 0:
@@ -90,6 +91,7 @@ class Target(object):
             rdm_positions = np.random.randint(0,max_len+1,diflen)
             for i in rdm_positions:
                 padded_seq = padded_seq[:i] + '0' + padded_seq[i:]
+            return padded_seq
         else:
             print("Wrong padding value")
         
