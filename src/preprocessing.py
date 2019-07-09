@@ -14,6 +14,7 @@ import pandas as pd
 import h5py
 import collections
 
+from itertools import chain
 from keras.preprocessing import sequence
 from keras.utils import np_utils
 from sklearn.model_selection import train_test_split
@@ -94,6 +95,7 @@ def splitting_sets(training_split, val_split, data, labels, folder, kfold_bool, 
         file_idcs = os.path.join(absPath, 'data/', folder, 'idcs_split.pickle')
         with open(file_idcs, "wb") as output_file:
             pickle.dump((idx_train, idx_val, idx_test), output_file)
+        return idx_train, idx_val, idx_test
     else:
         k_indices = []
         #first I split between training and test+validation sets
@@ -107,29 +109,62 @@ def splitting_sets(training_split, val_split, data, labels, folder, kfold_bool, 
             real_test_idx = [valtest_index[i] for i in test_index]
             k_indices.append((train_index, real_val_idx, real_test_idx))
             file_idcs = os.path.join(absPath, 'data/', folder, 'idcs_split.pickle')
-            with open(file_idcs, "wb") as output_file:
-                pickle.dump(k_indices, output_file)
+        with open(file_idcs, "wb") as output_file:
+            pickle.dump(k_indices, output_file)
+        return k_indices
 
-def creating_augmented_data(vars_padding, labels_task1, indices, labels_task2 = None):
+def creating_augmented_data(vars_padding, labels_task1, indices, folder, name_file, 
+                            labels_task2 = None, kfold_bool = False):
     """creating augmented data from all the types of padding from a specific set of indices"""
+    #creating idx of the length of data
+    idx_data = len(vars_padding[0])
     #creating empty list for sequences and labels
     seqs, lbl_task1, lbl_task2 = [],[],[]
     #joining the paddings
-    for idx in indices:
+    for idx in idx_data:
         for padding_type in vars_padding:
             seqs.append(padding_type[idx]), lbl_task1.append(labels_task1[idx])
             if labels_task2 != None:
                 lbl_task2.append(labels_task2[idx])
-    #now list must be shuffled
-    index_shuf = list(range(len(indices)))
-    random.shuffle(index_shuf)
-    seqs_shuf = np.array([seqs[i] for i in index_shuf])
-    task1_shuf = np.array([lbl_task1[i] for i in index_shuf])
-    if labels_task2 != None:
-        task2_shuf = np.array([lbl_task2[i] for i in index_shuf])
-        return seqs_shuf, task1_shuf, task2_shuf
+    #saving data
+    if not os.path.exists("".join([absPath, 'data/', folder])):
+            os.makedirs("".join([absPath, 'data/', folder]))
+    file_h5 = os.path.join(absPath, 'data/', folder, name_file)
+    h5_bin = h5py.File(file_h5, 'w')
+    h5_bin.create_dataset('x', data=seqs)
+    if isinstance(labels_task1, np.ndarray):
+        h5_bin.create_dataset('labels_task1', data=lbl_task1)
+    if isinstance(labels_task2, np.ndarray):
+        h5_bin.create_dataset('labels_task2', data=lbl_task2)
+    h5_bin.close()
+    #defining splitting
+    if kfold_bool == False:
+        #indices should be a tuple with i_train, i_val and i_test
+        i_train, i_val, i_test = indices
+        #creating new i_train, i_test and i_Val for augmented data
+        new_i_train = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
+                   for idx,x in enumerate(i_train)]))
+        new_i_val = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
+                   for idx,x in enumerate(i_val)]))
+        new_i_test = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
+                   for idx,x in enumerate(i_test)]))
+        file_idcs = os.path.join(absPath, 'data/', folder, 'idcs_aug_split.pickle')
+        with open(file_idcs, "wb") as output_file:
+            pickle.dump((new_i_train, new_i_val, new_i_test), output_file)
     else:
-        return seqs_shuf, task1_shuf, task2_shuf        
+        k_indices = []
+        for k_fold in indices:
+            i_train, i_val, i_test = k_fold
+            new_i_train = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
+                   for idx,x in enumerate(i_train)]))
+            new_i_val = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
+                   for idx,x in enumerate(i_val)]))
+            new_i_test = list(chain(*[list(range(x*len(vars_padding),(x*len(vars_padding)+len(vars_padding)))) 
+                   for idx,x in enumerate(i_test)]))
+            k_indices.append((new_i_train, new_i_val, new_i_test))
+        file_idcs = os.path.join(absPath, 'data/', folder, 'idcs_aug_split.pickle')
+        with open(file_idcs, "wb") as output_file:
+            pickle.dump(k_indices, output_file)        
 
 def data_to_hdf5(saving_path, name_file, list_x, dicti_padding, labels_task1=None, labels_task2=None):
     """ Saving encoded data to HDF5"""
@@ -147,8 +182,6 @@ def data_to_hdf5(saving_path, name_file, list_x, dicti_padding, labels_task1=Non
         if isinstance(labels_task2, np.ndarray):
             h5_bin.create_dataset('labels_task2', data=labels_task2)
         h5_bin.close()
-            
-        
     
 ################# EC number functions
 
