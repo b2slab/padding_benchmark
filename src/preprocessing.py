@@ -132,8 +132,7 @@ def creating_augmented_data(vars_padding, labels_task1, indices, folder, name_fi
     file_h5 = os.path.join(absPath, 'data/', folder, name_file)
     h5_bin = h5py.File(file_h5, 'w')
     h5_bin.create_dataset('x', data=seqs)
-    if isinstance(labels_task1, np.ndarray):
-        h5_bin.create_dataset('labels_task1', data=lbl_task1)
+    h5_bin.create_dataset('labels_task1', data=lbl_task1)
     if isinstance(labels_task2, np.ndarray):
         h5_bin.create_dataset('labels_task2', data=lbl_task2)
     h5_bin.close()
@@ -264,7 +263,7 @@ def encoding_as_multilabel(df, folder):
     return ec_multilabeled
 
 
-def keeping_indices_enzymes(labels_task1, indices, folder, name_file, kfold_bool==False):
+def keeping_indices_enzymes(labels_task1, indices, folder, name_file, kfold_bool=False):
     """Re-creates again training, validation and test sets only with enzymes"""
     enzyme_bin = [x.argmax(-1) for x in labels_task1]
     indices_enzyme = [idx for idx, x in enumerate(enzyme_bin) if x==1.0]
