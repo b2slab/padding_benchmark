@@ -31,9 +31,10 @@ from src.Target import Target
 np.random.seed(8)
 random.seed(8)
 
-def plot_history(folder, model_type):
+def plot_history(path_history):
     """Plot evolution of accuracy and loss both in training and in validation sets"""
-    file_his = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/history.pickle'])
+    #file_his = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/history.pickle'])
+    file_his = ''.join(string for string in [path_history, '/history.pickle'])
     with open(file_his, "rb") as input_file:
         history = pickle.load(input_file)
 
@@ -44,6 +45,8 @@ def plot_history(folder, model_type):
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
     plt.show()
+    file_fig = ''.join(string for string in [path_history, '/history_acc.png'])
+    plt.savefig(file_fig)
     # summarize history for loss
     plt.plot(history['loss'])
     plt.plot(history['val_loss'])
@@ -52,15 +55,19 @@ def plot_history(folder, model_type):
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
     plt.show()    
+    file_fig = ''.join(string for string in [path_history, '/history_loss.png'])
+    plt.savefig(file_fig)
+    return history
     
-def load_best_model(history, folder, model_type):
+def load_best_model(history, path_to_cp):
     """Looks for the best epoch in terms of validation accuracy and load the corresponding model"""
     #which one is the best epoch?
     best_epoch = str(history['val_acc'].index(max(history['val_acc'])) +1).zfill(3)
-    cp_path = ''.join(string for string in [absPath, 'data/checkpoint/', folder, '/', model_type, '/weights-improvement-', best_epoch, '*.hdf5'])
+    print('best epoch: ', best_epoch)
+    cp_path = ''.join(string for string in [path_to_cp, '/weights-improvement-', best_epoch, '*.hdf5'])
     cp_path = glob.glob(cp_path)[0]
     model = load_model(cp_path)
-    return model
+    return model, cp_path
 
 def predict_on_test(data_file, model_type, x_name, labels, i_test, model):
     """Load test data and predict on it"""
@@ -78,7 +85,7 @@ def predict_on_test(data_file, model_type, x_name, labels, i_test, model):
     y_prob = y_predprob[:,1]
     return y_predprob, y_pred, y_test_scalar, y_prob
 
-def confusion_matrix(y_test_scalar, y_pred, folder, model_type):
+def confusion_matrix(y_test_scalar, y_pred, path_to_confusion):
     """Creating a confusion matrix and saving it"""
     #model report
     print ("\nModel Report")
@@ -89,22 +96,23 @@ def confusion_matrix(y_test_scalar, y_pred, folder, model_type):
     print (metrics.classification_report(y_test_scalar, y_pred))
 
     #Saving metrics 
-    file_out = ''.join(string for string in [absPath, 'data/checkpoint/',folder, '/', model_type, '/resulting_metrics.pickle'])
+    #file_out = ''.join(string for string in [absPath, 'data/checkpoint/',folder, '/', model_type, '/resulting_metrics.pickle'])
+    file_out = ''.join(string for string in [path_to_confusion, '/resulting_metrics.pickle'])
     d = (metrics.accuracy_score(y_test_scalar, y_pred), metrics.confusion_matrix(y_test_scalar, y_pred), 
      metrics.classification_report(y_test_scalar, y_pred)) 
 
     with open(file_out, "wb") as output_file:
         pickle.dump(d, output_file)
 
-def compute_roc(y_test_scalar, y_prob, folder, model_type):
+def compute_roc(y_test_scalar, y_prob, path_to_auc):
     """Computing ROC curve and plotting it"""
     #Print model report:
     print ("\nModel Report II part")
     print ("AUC Score (Test): %f" % metrics.roc_auc_score(y_test_scalar, y_prob))   
 
     #Saving metrics 
-    file_auc = ''.join(string for string in [absPath, 'data/checkpoint/', folder, '/', model_type, '/auc.pickle']) 
-
+    #file_auc = ''.join(string for string in [absPath, 'data/checkpoint/', folder, '/', model_type, '/auc.pickle']) 
+    file_auc = ''.join(string for string in [path_to_auc, '/auc.pickle'])
     with open(file_auc, "wb") as output_file:
         pickle.dump(metrics.roc_curve(y_test_scalar, y_prob), output_file)
     
@@ -120,6 +128,8 @@ def compute_roc(y_test_scalar, y_prob, folder, model_type):
     plt.ylabel('True Positive Rate', fontsize = 14)
     plt.title("ROC Curve w/ AUC=%s" % str(metrics.auc(fpr,tpr)), fontsize = 18)
     plt.show()
+    file_fig = ''.join(string for string in [path_to_auc, '/auc.png'])
+    plt.savefig(file_fig)
 
 
 #Functions to compute and plot AUC
@@ -140,7 +150,7 @@ def get_fpr_tpr_for_thresh(fpr, tpr, thresh):
     fpr[p] = thresh
     return fpr[: p + 1], tpr[: p + 1]
 
-def computing_partial_auc(y_test_scalar, y_prob, folder, model_type):
+def computing_partial_auc(y_test_scalar, y_prob, folder):
     #fpr, tpr, thresh, trapezoid=False):
     fpr, tpr, _ = metrics.roc_curve(y_test_scalar, y_prob)
     """Computing partial AUC at a given threshold"""
@@ -150,7 +160,8 @@ def computing_partial_auc(y_test_scalar, y_prob, folder, model_type):
     print("Partial AUC:", part_auc_notrapez, part_auc_trapez)
     
     #Saving partial AUC
-    file_pauc = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/pauc.pickle']) 
+    #file_pauc = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/pauc.pickle']) 
+    file_pauc = ''.join(string for string in [folder, '/pauc.pickle'])
 
     with open(file_pauc, "wb") as output_file:
         pickle.dump(computing_partial_auc(fpr, tpr, 0.05, trapezoid=False), output_file)

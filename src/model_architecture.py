@@ -45,6 +45,9 @@ def building_3dense_model_task1(max_len, dict_size, number_neurons, n_class, dro
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
+    adamm = Adam()
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
+    
     # saving the model
     file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
 
@@ -67,6 +70,9 @@ def building_1convdense_model_task1(max_len, dict_size, number_neurons, n_class,
     main_dense = Dense(n_class, activation=final_act)(dropout_seq3)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
+    
+    adamm = Adam()
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
     file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
@@ -99,6 +105,9 @@ def building_stackconv_model_task1(max_len, dict_size, number_neurons, n_class, 
     dropout_seq3 = Dropout(drop_hid)(dense_seq3)
     main_dense = Dense(n_class, activation=final_act)(dropout_seq3)
     model = Model(inputs=[input_seq], outputs=[main_dense])
+    
+    adamm = Adam()
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
 
     print(model.summary())
     
@@ -122,6 +131,9 @@ def building_2dense_model_task2(max_len, dict_size, number_neurons, n_class, dro
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
+    adamm = Adam()
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
+    
     # saving the model
     file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
 
@@ -142,6 +154,9 @@ def building_1convdense_model_task2(max_len, dict_size, number_neurons, n_class,
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
     main_dense = Dense(n_class, activation=final_act)(dropout_seq2)
     print(model.summary())
+    
+    adamm = Adam()
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
     file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
@@ -174,6 +189,9 @@ def building_stackconv_model_task2(max_len, dict_size, nnumber_neurons, n_class,
     main_dense = Dense(n_class, activation=final_act)(dropout_seq2)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
+    
+    adamm = Adam()
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
     file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
