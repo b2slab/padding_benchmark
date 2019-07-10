@@ -178,8 +178,7 @@ def data_to_hdf5(saving_path, name_file, list_x, dicti_padding, labels_task1=Non
         h5_bin = h5py.File(file_h5, 'w')
         for i in list_x:
             h5_bin.create_dataset(i, data=dicti_padding[i])
-        if isinstance(labels_task1, np.ndarray):
-            h5_bin.create_dataset('labels_task1', data=labels_task1)
+        h5_bin.create_dataset('labels_task1', data=labels_task1)
         if isinstance(labels_task2, np.ndarray):
             h5_bin.create_dataset('labels_task2', data=labels_task2)
         h5_bin.close()

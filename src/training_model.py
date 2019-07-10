@@ -16,18 +16,20 @@ import keras
 from keras.models import load_model
 from sklearn import metrics
 from collections import Counter
+from keras.callbacks import ModelCheckpoint
 
 #root
 absPath = '/home/angela/padding_EBI/'
 sys.path.insert(0, absPath)
 
 from src.Target import Target
+from src.callbacks import *
 
 np.random.seed(8)
 random.seed(8)    
 
 def batch_generator(batch_size, file, dataset, indices, labels="labels"):
-    """Generates batches of a fiven size from a dataset of the HDF5 file. 
+    """Generates batches of a given size from a dataset of the HDF5 file. 
     It needs the indices of the dataset"""
     sample_size = len(indices)
     n_batches = int(sample_size/batch_size)
@@ -58,25 +60,79 @@ def count_time(start, end, folder, model_type):
     print("It has been ", str(datetime.timedelta(seconds=(end - start))))
     timee = (end - start)/3600
     #if the folder doesn't exist, create it
-    if not os.path.exists(''.join(string for string in [absPath, 'data/results', folder, '/', model_type])):
-        os.makedirs(''.join(string for string in [absPath, 'data/results', folder, '/', model_type]))
-    file_time = ''.join(string for string in [absPath, 'data/results', folder, '/', model_type, '/time.pickle'])
+    if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/'])):
+        os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/']))
+    file_time = ''.join(string for string in [absPath, 'data/results/', folder, model_type, '/time.pickle'])
 
     with open(file_time, "wb") as output_file:
         pickle.dump(timee, output_file)
 
-def saving_results(f1s, model_type, folder):
+def saving_results(model_type, folder, idx=None, kfold_bool=False):
     """Saving F1-score and history"""
-    if not os.path.exists(''.join(string for string in [absPath, 'data/results', folder, '/', model_type])):
-        os.makedirs(''.join(string for string in [absPath, 'data/results', folder, '/', model_type]))
+    if kfold_bool == False:
+        if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, model_type])):
+            os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, model_type]))
                     
-    file_f1 = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/f1_score.pickle'])
-    with open(file_f1, "wb") as output_file:
-        pickle.dump(f1s, output_file)
+    #file_f1 = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/f1_score.pickle'])
+    #with open(file_f1, "wb") as output_file:
+    #    pickle.dump(f1s, output_file)
                     
-    file_his = ''.join(string for string in [absPath, 'data/results/',folder, '/', model_type, '/history.pickle'])
+        file_his = ''.join(string for string in [absPath, 'data/results/',folder, model_type, '/history.pickle'])
 
-    with open(file_his, "wb") as output_file:
-        pickle.dump(history.history, output_file)
+        with open(file_his, "wb") as output_file:
+            pickle.dump(history.history, output_file)
+    else:
+        if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/', str(idx), '/'])):
+            os.makedirs(''.join(string for string in [absPath, 'data/results/', folder,  model_type, '/', str(idx), '/']))
+        file_his = ''.join(string for string in [absPath, 'data/results/',folder, model_type, '/', str(idx), '/history.pickle'])
 
+        with open(file_his, "wb") as output_file:
+            pickle.dump(history.history, output_file)
+
+def model_number_layers(model):
+    """Print the correspondence between layers and indices"""
+    for idx, layer in enumerate(model.layers):
+        print(idx, layer.name)
+        
+def trainval_generators(indices, model_type, folder, batch_size, labels, kfold_bool=False):
+    """create training and validation generators depending on if it's kfold or not"""
+    #which data to load
+    if model_type == "aug_padding":
+        file_data = os.path.join(absPath, 'data/', folder, 'aug_data.h5')
+    else:
+        file_data = os.path.join(absPath, 'data/', folder, 'data.h5')
+    h5f = h5py.File(file_data, 'r')
+    #now creating batches
+    if kfold_bool == False:
+        i_train, i_val, i_test = indices
+        train_generator = batch_generator(batch_size, file_data, model_type, i_train, labels)
+        val_generator = batch_generator(batch_size, file_data, model_type, i_val, labels)
+        generators = (train_generator, val_generator)
+    else:
+        generators = []
+        for k_fold in indices:
+            i_train, i_val, i_test = k_fold
+            train_generator = batch_generator(batch_size, file_data, model_type, i_train, labels)
+            val_generator = batch_generator(batch_size, file_data, model_type, i_val, labels)
+            generators.append((train_generator, val_generator))
+    return generators
                     
+def calling_callbacks(folder_cp, folder_wei, model_type, x_val, y_val, datasets_names, layers_numbers, scores=True, multilabel=False, weights=False, nans=True):
+    """Defining callbacks for the models"""
+    # define the checkpoint
+    cp_path = ''.join(string for string in [absPath, 'data/checkpoint/', folder_cp, 
+                                                   '/weights-improvement-{epoch:03d}-{val_acc:.4f}.hdf5'])
+    checkpoint = ModelCheckpoint(cp_path, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+    callbacks_list = [checkpoint]
+    if scores == True:
+        scores = Scores(x_val, y_val, multilabel)
+        callbacks_list.append(scores)
+    if nans == True:
+        nans = Nans(x_val, y_val)
+        callbacks_list.append(nans)
+    if weights == True:
+        file_weights = ''.join(string for string in [absPath, 'data/weights/',folder_wei, model_type])
+        weights = Weights(file_weights, datasets_names, layers_numbers)
+        callbacks_list.append(weights)
+    return callbacks_list
+

@@ -24,20 +24,20 @@ sys.path.insert(0, absPath)
 
 from src.Target import Target
 
-def saving_initial_weights(datasets_names, layers_numbers, folder, model_type, layers_numbers):
+def saving_initial_weights(model, datasets_names, layers_numbers, folder, model_type):
     """Saving initial weights of a model into a pre-specified folder"""
     if len(datasets_names) != len(layers_numbers):
         print("datasets_names should be the same length as layers_numbers")
     #create directories if they don't exist
-    if not os.path.exists(''.join(string for string in [absPath, 'data/weights/', model_type]):
-        os.makedirs(''.join(string for string in [absPath, 'data/weights/', model_type])
+    if not os.path.exists(''.join(string for string in [absPath, 'data/weights/', folder, model_type, '/'])):
+        os.makedirs(''.join(string for string in [absPath, 'data/weights/', folder, model_type, '/']))
     
     filee = ''.join(string for string in [absPath, 'data/weights/', folder, model_type, '/model_weights.h5'])
     file_weights = h5py.File(filee, 'w')
     
     for idx,i in enumerate(datasets_names):
-        if not os.path.exists(''.join(string for string in [absPath, 'data/weights/', model_type, '/', i]):
-            os.makedirs(''.join(string for string in [absPath, 'data/weights/', model_type, '/', i])
+        if not os.path.exists(''.join(string for string in [absPath, 'data/weights/',folder, model_type, '/', i])):
+            os.makedirs(''.join(string for string in [absPath, 'data/weights/', folder, model_type, '/', i]))
         name_dataset = ''.join(string for string in ['/', i, '/weights_0'])
         file_weights.create_dataset(name_dataset, shape=model.layers[layers_numbers[idx]].get_weights()[0].shape, data=model.layers[layers_numbers[idx]].get_weights()[0])
     file_weights.close()
@@ -58,31 +58,31 @@ class Weights(Callback):
         self.times_file.write(self.timestr + '\n')
 
     def on_epoch_end(self, epoch, logs={}):
-        for idx, i in enumerate(datasets_names):
+        for idx, i in enumerate(self.datasets_names):
             dataset_name = ''.join(string for string in ['/', i, '/weights_%s'])
             self.file.create_dataset(dataset_name % str(epoch).zfill(3),
-                                     shape=self.model.layers[layers_numbers[idx]]get_weights()[0].shape, 
-                                    data=self.model.layers[layers_numbers[idx]].get_weights()[0])
+                                     shape=self.model.layers[self.layers_numbers[idx]].get_weights()[0].shape, 
+                                    data=self.model.layers[self.layers_numbers[idx]].get_weights()[0])
             self.times_file.write(self.timestr + '\n')
     
     def on_train_end(self, logs={}):
         self.file.close()
         self.times_file.close()
                         
-def saving_initial_biases(datasets_names, layers_numbers, folder, model_type, layers_numbers):
+def saving_initial_biases(model, datasets_names, layers_numbers, folder, model_type):
     """Saving initial weights of a model into a pre-specified folder"""
     if len(datasets_names) != len(layers_numbers):
         print("datasets_names should be the same length as layers_numbers")
     #create directories if they don't exist
-    if not os.path.exists(''.join(string for string in [absPath, 'data/biases/', model_type]):
-        os.makedirs(''.join(string for string in [absPath, 'data/biases/', model_type])
+    if not os.path.exists(''.join(string for string in [absPath, 'data/biases/', folder, model_type, '/'])):
+        os.makedirs(''.join(string for string in [absPath, 'data/biases/', folder, model_type, '/']))
     
     filee = ''.join(string for string in [absPath, 'data/biases/', folder, model_type, '/model_weights.h5'])
     file_weights = h5py.File(filee, 'w')
     
     for idx,i in enumerate(datasets_names):
-        if not os.path.exists(''.join(string for string in [absPath, 'data/biases/', model_type, '/', i]):
-            os.makedirs(''.join(string for string in [absPath, 'data/biases/', model_type, '/', i])
+        if not os.path.exists(''.join(string for string in [absPath, 'data/biases/', folder, model_type, '/', i])):
+            os.makedirs(''.join(string for string in [absPath, 'data/biases/', folder, model_type, '/', i]))
         name_dataset = ''.join(string for string in ['/', i, '/bias_0'])
         file_weights.create_dataset(name_dataset, shape=model.layers[layers_numbers[idx]].get_weights()[1].shape, data=model.layers[layers_numbers[idx]].get_weights()[1])
     file_weights.close()
@@ -99,11 +99,11 @@ class Biases(Callback):
         self.file = h5py.File('%s/model_biases.h5' % self.filee,'r+')
 
     def on_epoch_end(self, epoch, logs={}):
-        for idx, i in enumerate(datasets_names):
+        for idx, i in enumerate(self.datasets_names):
             dataset_name = ''.join(string for string in ['/', i, '/bias_%s'])
             self.file.create_dataset(dataset_name % str(epoch).zfill(3),
-                                     shape=self.model.layers[layers_numbers[idx]]get_weights()[1].shape, 
-                                    data=self.model.layers[layers_numbers[idx]].get_weights()[1])
+                                     shape=self.model.layers[self.layers_numbers[idx]].get_weights()[1].shape, 
+                                    data=self.model.layers[self.layers_numbers[idx]].get_weights()[1])
     
     def on_train_end(self, logs={}):
         self.file.close()
