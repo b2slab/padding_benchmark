@@ -85,6 +85,10 @@ def splitting_sets(training_split, val_split, data, labels, folder, kfold_bool, 
     It can be chosen if splitting with (stratified) KFold or not. val_split is respect 
     to 1-training_split"""
     indices = list(np.arange(len(data)))
+    
+    if labels[0].shape[0] > 2:
+        labels = np.array([0 if list(x) ==[0., 0., 0., 0., 0., 0., 0.] else (x.argmax(-1)+1) for x in list(labels)])
+    
     if kfold_bool == False:
         #this has to be done twice in order to separate in training/validation and test
         x_train, x_valtest, y_train, y_valtest, idx_train, idx_valtest = train_test_split(data, 
