@@ -111,27 +111,30 @@ def processing_roc_auc(df, metrics):
         df = df.drop('value',axis=1)
     return df
 
-def plotting_auc_acc_boxplots(df, folder, metrics, nfolds):
-    """Plotting AUC/accuracy on test values in boxplots"""
+def plotting_auc_acc_boxplots(df, folder, metrics, nfolds, task):
+    """Plotting AUC/accuracy/scores on test values in boxplots"""
     if metrics == "auc":
-        titlee = "Task 1 - AUC (%i holdouts)" %nfolds
+        titlee = "%s - AUC (%i holdouts)" %(task, nfolds)
         filename = "aucs_comparison.pdf"
-    else:
-        titlee = "Task 1 - Test accuracy (%i holdouts)" %nfolds
+        x="variable"
+    elif metrics == "accuracy":
+        titlee = "%s - Test accuracy (%i holdouts)" %(task, nfolds)
         filename = "test_accuracy_comparison.pdf"
-    p = (ggplot(df, aes(x='variable', y="value", fill="variable"))
+        x="variable"
+    
+    p = (ggplot(df, aes(x=x, y="value", fill=x))
          +geom_boxplot()
          + scale_fill_brewer(palette="Set3", type='qual')
          +theme_bw()
          +theme(figure_size=(12,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=10),
-                legend_text=element_text(size=10), strip_text_x = element_text(size=10))
+                legend_text=element_text(size=10), strip_text_x = element_text(size=10), axis_text_x = element_blank())
          + ggtitle(titlee)
     )
     file_auc = ''.join(string for string in [absPath,'data/results/', folder])
     p.save(path = file_auc, format = 'pdf', dpi=300, filename=filename)
     return p
 
-def plotting_ROC_curves(df, folder, nfolds):
+def plotting_ROC_curves(df, folder, nfolds, task):
     """Plotting ROC curves"""
     k = random.randint(0, nfolds-1)
     df = df.loc[df.index == k]
@@ -146,7 +149,7 @@ def plotting_ROC_curves(df, folder, nfolds):
     plt.xlabel('False Positive Rate', fontsize = 14)
     plt.ylabel('True Positive Rate', fontsize = 14)
     plt.legend(prop={'size': 12})
-    plt.title("Task 1 - ROC curves (holdout=%i)" %k, size=18)
+    plt.title("%s - ROC curves (holdout=%i)" %(task,k), size=18)
     file_fig = ''.join(string for string in [absPath,'data/results/', folder, 'ROC_curves.png'])
     plt.savefig(file_fig)
     plt.show()
@@ -167,6 +170,23 @@ def processing_metrics_results(df, list_paddings, folder, nfolds):
             formatted['type_padding'] = pad
             list_dfs.append(formatted)
     scores_final = pd.concat(list_dfs)
+    scores_final = scores_final.drop("support", 1)
+    scores_final = scores_final.melt(id_vars=["class", "index", "type_padding"])
     #processing test accuracy
     accu = accu.reset_index().melt(id_vars='index')
     return scores_final, accu
+
+def plotting_scores_boxplots(df, folder, nfolds, task):
+    """Plotting F1-score/precision/recall on test values in boxplots"""
+    p = (ggplot(df, aes(x='model_type', y="value", fill='model_type'))
+         +geom_boxplot()
+         + scale_fill_brewer(palette="Set3", type='qual')
+         +theme_bw()
+         +theme(figure_size=(12,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=10),
+                legend_text=element_text(size=10), strip_text_x = element_text(size=10), axis_text_x = element_blank())
+         + facet_grid("class~variable")
+         + ggtitle("%s - performance metrics (%i holdouts)" %(task, nfolds))
+    )
+    file_met = ''.join(string for string in [absPath,'data/results/', folder])
+    p.save(path = file_met, format = 'pdf', dpi=300, filename="scores.pdf")
+    return p
