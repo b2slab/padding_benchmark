@@ -100,7 +100,7 @@ def confusion_matrix(y_test_scalar, y_pred, path_to_confusion):
     #file_out = ''.join(string for string in [absPath, 'data/checkpoint/',folder, '/', model_type, '/resulting_metrics.pickle'])
     file_out = ''.join(string for string in [path_to_confusion, '/resulting_metrics.pickle'])
     d = (metrics.accuracy_score(y_test_scalar, y_pred), metrics.confusion_matrix(y_test_scalar, y_pred), 
-     metrics.classification_report(y_test_scalar, y_pred)) 
+     metrics.classification_report(y_test_scalar, y_pred, output_dict=True)) 
 
     with open(file_out, "wb") as output_file:
         pickle.dump(d, output_file)

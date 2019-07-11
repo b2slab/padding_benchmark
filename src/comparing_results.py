@@ -56,7 +56,7 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "acc"].values[0], label=i)
-    plt.title('%s- models training accuracy (k=%i)' %(task, k))
+    plt.title('%s- models training accuracy (holdout=%i)' %(task, k))
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend()
@@ -68,7 +68,7 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "val_acc"].values[0], label=i)
-    plt.title('%s- models validation accuracy (k=%i)' %(task, k))
+    plt.title('%s- models validation accuracy (holdout=%i)' %(task, k))
     plt.ylabel('val accuracy')
     plt.xlabel('epoch')
     plt.legend()
@@ -80,7 +80,7 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "loss"].values[0], label=i)
-    plt.title('%s- models training loss (k=%i)' %(task, k))
+    plt.title('%s- models training loss (holdout=%i)' %(task, k))
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend()
@@ -92,7 +92,7 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "val_loss"].values[0], label=i)
-    plt.title('%s- models validation loss (k=%i)' %(task, k))
+    plt.title('%s- models validation loss (holdout=%i)' %(task, k))
     plt.ylabel('val loss')
     plt.xlabel('epoch')
     plt.legend()
@@ -111,3 +111,62 @@ def processing_roc_auc(df, metrics):
         df = df.drop('value',axis=1)
     return df
 
+def plotting_auc_acc_boxplots(df, folder, metrics, nfolds):
+    """Plotting AUC/accuracy on test values in boxplots"""
+    if metrics == "auc":
+        titlee = "Task 1 - AUC (%i holdouts)" %nfolds
+        filename = "aucs_comparison.pdf"
+    else:
+        titlee = "Task 1 - Test accuracy (%i holdouts)" %nfolds
+        filename = "test_accuracy_comparison.pdf"
+    p = (ggplot(df, aes(x='variable', y="value", fill="variable"))
+         +geom_boxplot()
+         + scale_fill_brewer(palette="Set3", type='qual')
+         +theme_bw()
+         +theme(figure_size=(12,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=10),
+                legend_text=element_text(size=10), strip_text_x = element_text(size=10))
+         + ggtitle(titlee)
+    )
+    file_auc = ''.join(string for string in [absPath,'data/results/', folder])
+    p.save(path = file_auc, format = 'pdf', dpi=300, filename=filename)
+    return p
+
+def plotting_ROC_curves(df, folder, nfolds):
+    """Plotting ROC curves"""
+    k = random.randint(0, nfolds-1)
+    df = df.loc[df.index == k]
+    fig = plt.figure(figsize=(12,9))
+    lw = 3
+    for i in df["variable"]:
+        plt.plot(df.loc[df.variable==i, "fpr"].values[0], df.loc[df.variable==i, "tpr"].values[0], label=i)
+    #plt.plot(fpr, tpr, lw=lw)
+    plt.plot([0, 1], [0, 1], lw=1, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate', fontsize = 14)
+    plt.ylabel('True Positive Rate', fontsize = 14)
+    plt.legend(prop={'size': 12})
+    plt.title("Task 1 - ROC curves (holdout=%i)" %k, size=18)
+    file_fig = ''.join(string for string in [absPath,'data/results/', folder, 'ROC_curves.png'])
+    plt.savefig(file_fig)
+    plt.show()
+    
+def processing_metrics_results(df, list_paddings, folder, nfolds):
+    """It process the saved metrics from the models and returns a dataframe with F1-Score, precision and recall and another dataframe with accuracy on test"""
+    metrics, k = collecting_metrics_folds("resulting_metrics", list_paddings, folder, 3)
+    accu = metrics.apply(lambda x: [y[0] for y in x])
+    scores = metrics.apply(lambda x: [y[2] for y in x])
+    
+    #processing scores
+    list_dfs = []
+    for i,row in scores.iterrows():
+        for pad in list_paddings:
+            formatted = pd.DataFrame(scores.loc[0, pad]).transpose().reset_index()
+            formatted.columns = ['class', 'f1-score', 'precision', 'recall', 'support']
+            formatted['index'] = row.name
+            formatted['type_padding'] = pad
+            list_dfs.append(formatted)
+    scores_final = pd.concat(list_dfs)
+    #processing test accuracy
+    accu = accu.reset_index().melt(id_vars='index')
+    return scores_final, accu
