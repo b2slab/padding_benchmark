@@ -15,6 +15,7 @@ import pandas as pd
 import h5py
 import pylab as pl
 import glob
+import bisect
 
 import tensorflow as tf
 import keras
@@ -112,9 +113,13 @@ def compute_roc(y_test_scalar, y_prob, path_to_auc):
 
     #Saving metrics 
     #file_auc = ''.join(string for string in [absPath, 'data/checkpoint/', folder, '/', model_type, '/auc.pickle']) 
+    file_roc = ''.join(string for string in [path_to_auc, '/roc.pickle'])
+    with open(file_roc, "wb") as output_file:
+        pickle.dump(metrics.roc_curve(y_test_scalar, y_prob), output_file)
+        
     file_auc = ''.join(string for string in [path_to_auc, '/auc.pickle'])
     with open(file_auc, "wb") as output_file:
-        pickle.dump(metrics.roc_curve(y_test_scalar, y_prob), output_file)
+        pickle.dump(metrics.roc_auc_score(y_test_scalar, y_prob), output_file)
     
     # Computing ROC curve
     fpr, tpr, _ = metrics.roc_curve(y_test_scalar, y_prob)
@@ -150,7 +155,7 @@ def get_fpr_tpr_for_thresh(fpr, tpr, thresh):
     fpr[p] = thresh
     return fpr[: p + 1], tpr[: p + 1]
 
-def computing_partial_auc(y_test_scalar, y_prob, folder):
+def computing_partial_auc(y_test_scalar, y_prob, folder, thresh=0.05):
     #fpr, tpr, thresh, trapezoid=False):
     fpr, tpr, _ = metrics.roc_curve(y_test_scalar, y_prob)
     """Computing partial AUC at a given threshold"""
@@ -164,7 +169,7 @@ def computing_partial_auc(y_test_scalar, y_prob, folder):
     file_pauc = ''.join(string for string in [folder, '/pauc.pickle'])
 
     with open(file_pauc, "wb") as output_file:
-        pickle.dump(computing_partial_auc(fpr, tpr, 0.05, trapezoid=False), output_file)
+        pickle.dump(part_auc_notrapez, output_file)
     return part_auc_notrapez, part_auc_trapez
 
 #Functions for giffing weights
