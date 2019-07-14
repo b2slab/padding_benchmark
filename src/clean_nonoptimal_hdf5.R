@@ -48,8 +48,8 @@ while(TRUE) {
     }
   })
   
-  message("Waiting for one hour to clean again...")
-  Sys.sleep(3600)
+  message("Waiting to clean again...")
+  Sys.sleep(300)
 }
 
 message("Done!")
