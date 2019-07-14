@@ -94,11 +94,12 @@ def model_number_layers(model):
     for idx, layer in enumerate(model.layers):
         print(idx, layer.name)
         
-def trainval_generators(indices, model_type, folder, batch_size, labels, kfold_bool=False):
+def trainval_generators(indices, indices_aug, model_type, folder, batch_size, labels, kfold_bool=False):
     """create training and validation generators depending on if it's kfold or not"""
     #which data to load
     if model_type == "aug_padding":
         file_data = os.path.join(absPath, 'data/', folder, 'aug_data.h5')
+        indices = indices_aug
     else:
         file_data = os.path.join(absPath, 'data/', folder, 'data.h5')
     h5f = h5py.File(file_data, 'r')
