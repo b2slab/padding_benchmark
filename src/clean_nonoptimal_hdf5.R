@@ -18,33 +18,39 @@ best_weights <- function(vec.hdf5) {
   vec.hdf5[which.max(accnum)]
 }
 
-message("Cleaning sub-optimal weights from ", dir.clean)
-
-tmp <- lapply(dirs, function(d) {
-  print(d)
-  hdf5 <- list.files(
-    d, 
-    pattern = "weights-improvement-\\d+-[0-9\\.]+\\.hdf5$", 
-    full.names = TRUE, 
-    include.dirs = FALSE)
+while(TRUE) {
+  message("Cleaning sub-optimal weights from ", dir.clean)
   
-  if (length(hdf5) > 0) {
-    message("File names:")
-    print(hdf5)
+  tmp <- lapply(dirs, function(d) {
+    print(d)
+    hdf5 <- list.files(
+      d,
+      pattern = "weights-improvement-\\d+-[0-9\\.]+\\.hdf5$",
+      full.names = TRUE,
+      include.dirs = FALSE)
     
-    message("Best:")
-    print(best_weights(hdf5))
-    
-    file.del <- setdiff(hdf5, best_weights(hdf5))
-    message("Delete:")
-    print(file.del)
-    
-    unlink(file.del)
-    
-    message("")
-
-    invisible()
-  }
-})
+    if (length(hdf5) > 0) {
+      # message("File names:")
+      # print(hdf5)
+      
+      message("Best:")
+      print(best_weights(hdf5))
+      
+      file.del <- setdiff(hdf5, best_weights(hdf5))
+      message("Delete:")
+      print(file.del)
+      
+      unlink(file.del)
+      
+      message("")
+      
+      invisible()
+    }
+  })
+  
+  message("Waiting for one hour to clean again...")
+  Sys.sleep(3600)
+}
 
 message("Done!")
+
