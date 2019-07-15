@@ -67,24 +67,24 @@ def count_time(start, end, folder, model_type):
     with open(file_time, "wb") as output_file:
         pickle.dump(timee, output_file)
 
-def saving_results(history, model_type, folder, idx=None, kfold_bool=False):
+def saving_results(history, model_type, folder, task idx=None, kfold_bool=False):
     """Saving F1-score and history"""
     if kfold_bool == False:
-        if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, model_type])):
-            os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, model_type]))
-                    
+        if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, task, model_type])):
+            os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, task, model_type]))
+                  
     #file_f1 = ''.join(string for string in [absPath, 'data/results/', folder, '/', model_type, '/f1_score.pickle'])
     #with open(file_f1, "wb") as output_file:
     #    pickle.dump(f1s, output_file)
                     
-        file_his = ''.join(string for string in [absPath, 'data/results/',folder, model_type, '/history.pickle'])
+        file_his = ''.join(string for string in [absPath, 'data/results/',folder, task, model_type, '/history.pickle'])
 
         with open(file_his, "wb") as output_file:
             pickle.dump(history.history, output_file)
     else:
-        if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/', str(idx), '/'])):
-            os.makedirs(''.join(string for string in [absPath, 'data/results/', folder,  model_type, '/', str(idx), '/']))
-        file_his = ''.join(string for string in [absPath, 'data/results/',folder, model_type, '/', str(idx), '/history.pickle'])
+        if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, task, model_type, '/', str(idx), '/'])):
+            os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, task, model_type, '/', str(idx), '/']))
+        file_his = ''.join(string for string in [absPath, 'data/results/',folder, task, model_type, '/', str(idx), '/history.pickle'])
 
         with open(file_his, "wb") as output_file:
             pickle.dump(history.history, output_file)
