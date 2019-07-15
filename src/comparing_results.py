@@ -25,7 +25,7 @@ np.random.seed(8)
 random.seed(8)
 
 def collecting_metrics_folds(metrics, list_paddings, folder, n_fold):
-    """Collecting all the metrics from the different k_folds into one"""
+    """Collecting all the metrics (history, auc, roc) from the different k_folds into one"""
     metrics_dict = {}
     for i in list_paddings:
     #It doesn't make much sense to plot history of all the folds. We choose one and plot it
@@ -154,9 +154,9 @@ def plotting_ROC_curves(df, folder, nfolds, task):
     plt.savefig(file_fig)
     plt.show()
     
-def processing_metrics_results(df, list_paddings, folder, nfolds):
+def processing_metrics_results(list_paddings, folder, nfolds):
     """It process the saved metrics from the models and returns a dataframe with F1-Score, precision and recall and another dataframe with accuracy on test"""
-    metrics, k = collecting_metrics_folds("resulting_metrics", list_paddings, folder, 3)
+    metrics, k = collecting_metrics_folds("resulting_metrics", list_paddings, folder, nfolds)
     accu = metrics.apply(lambda x: [y[0] for y in x])
     scores = metrics.apply(lambda x: [y[2] for y in x])
     
@@ -178,7 +178,7 @@ def processing_metrics_results(df, list_paddings, folder, nfolds):
 
 def plotting_scores_boxplots(df, folder, nfolds, task):
     """Plotting F1-score/precision/recall on test values in boxplots"""
-    p = (ggplot(df, aes(x='model_type', y="value", fill='model_type'))
+    p = (ggplot(df, aes(x='type_padding', y="value", fill='type_padding'))
          +geom_boxplot()
          + scale_fill_brewer(palette="Set3", type='qual')
          +theme_bw()
