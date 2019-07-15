@@ -164,14 +164,14 @@ def processing_metrics_results(list_paddings, folder, nfolds):
     list_dfs = []
     for i,row in scores.iterrows():
         for pad in list_paddings:
-            formatted = pd.DataFrame(scores.loc[0, pad]).transpose().reset_index()
-            formatted.columns = ['class', 'f1-score', 'precision', 'recall', 'support']
+            formatted = pd.DataFrame(scores.loc[i, pad]).transpose().reset_index()
+            formatted.columns = ['enz_type', 'f1-score', 'precision', 'recall', 'support']
             formatted['index'] = row.name
             formatted['type_padding'] = pad
             list_dfs.append(formatted)
     scores_final = pd.concat(list_dfs)
     scores_final = scores_final.drop("support", 1)
-    scores_final = scores_final.melt(id_vars=["class", "index", "type_padding"])
+    scores_final = scores_final.melt(id_vars=["enz_type", "index", "type_padding"])
     #processing test accuracy
     accu = accu.reset_index().melt(id_vars='index')
     return scores_final, accu
@@ -184,7 +184,7 @@ def plotting_scores_boxplots(df, folder, nfolds, task):
          +theme_bw()
          +theme(figure_size=(12,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=10),
                 legend_text=element_text(size=10), strip_text_x = element_text(size=10), axis_text_x = element_blank())
-         + facet_grid("class~variable")
+         + facet_grid("enz_type~variable")
          + ggtitle("%s - performance metrics (%i holdouts)" %(task, nfolds))
     )
     file_met = ''.join(string for string in [absPath,'data/results/', folder])
