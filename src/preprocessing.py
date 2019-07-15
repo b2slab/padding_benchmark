@@ -135,7 +135,7 @@ def creating_augmented_data(vars_padding, labels_task1, indices, folder, name_fi
             os.makedirs("".join([absPath, 'data/', folder]))
     file_h5 = os.path.join(absPath, 'data/', folder, name_file)
     h5_bin = h5py.File(file_h5, 'w')
-    h5_bin.create_dataset('x', data=seqs)
+    h5_bin.create_dataset('aug_padding', data=seqs)
     h5_bin.create_dataset('labels_task1', data=lbl_task1)
     if isinstance(labels_task2, np.ndarray):
         h5_bin.create_dataset('labels_task2', data=lbl_task2)
