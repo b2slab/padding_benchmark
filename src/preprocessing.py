@@ -234,6 +234,7 @@ def counting_multilabel(df):
     print("The unique labels are ", unique_ecs)
     plt.bar(range(len(list(new_dict.keys()))), list(new_dict.values()), color='g', tick_label=list(new_dict.keys()))
     plt.title("Histogram of firsts digits of EC number (nan are not enzymes)")
+    print(new_dict)
     plt.show()
 
 def encoding_as_multilabel(df, folder):

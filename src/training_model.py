@@ -67,7 +67,7 @@ def count_time(start, end, folder, model_type):
     with open(file_time, "wb") as output_file:
         pickle.dump(timee, output_file)
 
-def saving_results(history, model_type, folder, task idx=None, kfold_bool=False):
+def saving_results(history, model_type, folder, task, idx=None, kfold_bool=False):
     """Saving F1-score and history"""
     if kfold_bool == False:
         if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, task, model_type])):
