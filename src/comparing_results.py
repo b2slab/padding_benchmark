@@ -134,13 +134,13 @@ def plotting_auc_acc_boxplots(df, folder, metrics, nfolds, task):
     p.save(path = file_auc, format = 'pdf', dpi=300, filename=filename)
     return p
 
-def plotting_ROC_curves(df, folder, nfolds, task):
+def plotting_ROC_curves(df, folder, nfolds, task, list_paddings):
     """Plotting ROC curves"""
     k = random.randint(0, nfolds-1)
-    df = df.loc[df.index == k]
+    df = df.loc[df["index"] == k]
     fig = plt.figure(figsize=(12,9))
     lw = 3
-    for i in df["variable"]:
+    for i in list_paddings:
         plt.plot(df.loc[df.variable==i, "fpr"].values[0], df.loc[df.variable==i, "tpr"].values[0], label=i)
     #plt.plot(fpr, tpr, lw=lw)
     plt.plot([0, 1], [0, 1], lw=1, linestyle='--')
