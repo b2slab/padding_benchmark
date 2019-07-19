@@ -76,7 +76,7 @@ class Target(object):
         elif pad_type=="post":
             padded_seq = prot_string.ljust(max_len, '0')
             return padded_seq
-        elif pad_type =="stretch":
+        elif pad_type =="strf":
             padded_seq = self.stretching_seq(prot_string, max_len)
             return padded_seq
         elif pad_type == "ext":
@@ -86,7 +86,7 @@ class Target(object):
             else:
                 padded_seq = zeross + prot_string + zeross + "0"
             return padded_seq
-        elif pad_type == "rdm":
+        elif pad_type == "rnd":
             padded_seq = prot_string
             rdm_positions = np.random.randint(0,max_len+1,diflen)
             for i in rdm_positions:

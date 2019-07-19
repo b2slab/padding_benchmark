@@ -164,7 +164,7 @@ def building_1convdense_model_task2(max_len, dict_size, number_neurons, n_class,
     model.save(file_model)
     return model
 
-def building_stackconv_model_task2(max_len, dict_size, nnumber_neurons, n_class, drop_per, drop_hid, n_filt, kernel_size,
+def building_stackconv_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, n_filt, kernel_size,
                                     pool_size, final_act, folder):
     """"Builds a model with a stack of convolutional layers and three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
     input_seq = Input(shape=(max_len, dict_size), dtype='float32')
@@ -197,4 +197,30 @@ def building_stackconv_model_task2(max_len, dict_size, nnumber_neurons, n_class,
     file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
 
     model.save(file_model)
+    return model
+
+def model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class, drop_per, drop_hid, final_act, 
+                 n_filt=None, kernel_size=None, pool_size=None):
+    """Choosing model architecture and defining model"""
+    if architecture == "only_denses":
+        if task == "task1/":
+            model = building_2dense_model_task2(max_len, dict_size, n_neur, n_class, drop_per,
+                                                drop_hid, final_act, folder)
+        else:
+            model = building_2dense_model_task2(max_len, dict_size, n_neur, n_class, 
+                                                drop_per, drop_hid, final_act, folder)                   
+    elif architecture == "conv_dense":
+        if task == "task1/":
+            model = building_1convdense_model_task1(max_len, dict_size, n_neur, n_class, 
+                                                    drop_per, drop_hid, n_filt, kernel_size, final_act, folder)            
+        else:
+            model = building_1convdense_model_task2(max_len, dict_size, n_neur, n_class, drop_per, 
+                                                    drop_hid, n_filt, kernel_size, final_act, folder)
+    elif architecture == "stack_conv":
+        if task == "task1/":
+            building_stackconv_model_task1(max_len, dict_size, n_neur, n_class, drop_per, drop_hid, 
+                                            n_filt, kernel_size, pool_size, final_act, folder)
+        else:
+            model = building_stackconv_model_task2(max_len, dict_size, n_neur, n_class, drop_per, 
+                                                    drop_hid, n_filt, kernel_size, pool_size, final_act, folder)
     return model

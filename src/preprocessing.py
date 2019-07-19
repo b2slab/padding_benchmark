@@ -14,7 +14,6 @@ import pandas as pd
 import h5py
 import collections
 
-from itertools import chain
 from keras.preprocessing import sequence
 from keras.utils import np_utils
 from sklearn.model_selection import train_test_split

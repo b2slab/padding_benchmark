@@ -137,3 +137,38 @@ def calling_callbacks(folder_cp, folder_wei, model_type, x_val, y_val, datasets_
         callbacks_list.append(weights)
     return callbacks_list
 
+def model_training(model_type, folder, task, idx, callbacks_list, architecture, max_len, dict_size,
+                  n_neur, n_class, drop_per, drop_hid, final_act, epochss, n_filt = None, 
+                   kernel_size=None, pool_size=None):
+    """Training model"""
+    folder_cp = ''.join(string for string in [folder, task, model_type, '/', str(idx)])
+    if not os.path.exists(os.path.join(absPath, 'data/checkpoint/', folder_cp)):
+        os.makedirs(''.join(string for string in [absPath, 'data/checkpoint/', folder_cp]))
+    callbacks_list = calling_callbacks(folder_cp, folder, model_type, callbacks_list[0], callbacks_list[1], 
+                                        callbacks_list[2], callbacks_list[3], callbacks_list[4], 
+                                        callbacks_list[5], callbacks_list[6], callbacks_list[7])
+    folder_task =  ''.join(string for string in [folder, task])
+    #deberia haber aqui muchos ifs para elegir el tipo de modelo
+    model = model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class, drop_per, drop_hid, 
+                            final_act, n_filt=None, kernel_size=None, pool_size=None)
+    #writing log file 
+    log_file = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, 'log_file.txt' ]) 
+    f = open(log_file, 'a+')
+    print('Model type: %s \n' % model_type, file=f)
+    print('Fold: %i \n' % idx, file=f)
+    start = time.time()
+    formatted_time = datetime.datetime.now()
+    print('Starting time: %s \n' % formatted_time, file=f)
+    history = model.fit_generator(generator=train_generator, 
+                            validation_data=val_generator,
+                            steps_per_epoch= int(len_train/batch_size),
+                            validation_steps=int(len_val/batch_size),
+                            epochs=epochss,
+                            callbacks=callbacks_list,
+                            verbose=1)
+    end = time.time()
+    formatted_endtime = datetime.datetime.now()
+    print('Finishing time: %s \n' % formatted_endtime, file=f)
+    count_time(start, end, folder, model_type)
+    saving_results(history, model_type, folder, task, idx, True)
+    f.close()
