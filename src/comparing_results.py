@@ -24,21 +24,21 @@ sys.path.insert(0, absPath)
 np.random.seed(8)
 random.seed(8)
 
-def collecting_metrics_folds(metrics, list_paddings, folder, n_fold):
+def collecting_metrics_folds(metrics, list_paddings, folder, task, n_fold):
     """Collecting all the metrics (history, auc, roc) from the different k_folds into one"""
     metrics_dict = {}
     for i in list_paddings:
     #It doesn't make much sense to plot history of all the folds. We choose one and plot it
         if metrics == 'history':
             k = random.randint(0, n_fold-1) 
-            file_metrics = ''.join(string for string in [absPath, 'data/results/', folder, i, '/', 
+            file_metrics = ''.join(string for string in [absPath, 'data/results/', folder, task, i, '/', 
                                                          str(k), '/', metrics, '.pickle'])
             with open(file_metrics, "rb") as input_file:
                 metrics_dict[i] = pickle.load(input_file)
         else:
             list_results = []
             for k in range(n_fold):
-                file_metrics = ''.join(string for string in [absPath, 'data/results/', folder, i, '/', 
+                file_metrics = ''.join(string for string in [absPath, 'data/results/', folder, task, i, '/', 
                                                          str(k), '/', metrics, '.pickle'])
                 with open(file_metrics, "rb") as input_file:
                     #metrics_dict[i] = pickle.load(input_file)
@@ -48,7 +48,7 @@ def collecting_metrics_folds(metrics, list_paddings, folder, n_fold):
     return metrics_df, k
 
 
-def plotting_history(df, task, folder, k):
+def plotting_history(df, task_string, folder, task, k):
     """It doesn't make much sense to plot history of all the folds. We choose one and plot it"""
     history_df = df.transpose().reset_index(level=0)
     history_df.columns = ["model_type", 'acc', 'loss', 'val_acc', 'val_loss']
@@ -56,11 +56,11 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "acc"].values[0], label=i)
-    plt.title('%s- models training accuracy (holdout=%i)' %(task, k))
+    plt.title('%s- models training accuracy (holdout=%i)' %(task_string, k))
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend()
-    file_fig = ''.join(string for string in [absPath,'data/results/', folder, 'train_acc_comparison.png'])
+    file_fig = ''.join(string for string in [absPath,'data/results/', folder, task, 'train_acc_comparison.png'])
     plt.savefig(file_fig)
     plt.show()
     
@@ -68,11 +68,11 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "val_acc"].values[0], label=i)
-    plt.title('%s- models validation accuracy (holdout=%i)' %(task, k))
+    plt.title('%s- models validation accuracy (holdout=%i)' %(task_string, k))
     plt.ylabel('val accuracy')
     plt.xlabel('epoch')
     plt.legend()
-    file_fig = ''.join(string for string in [absPath,'data/results/', folder, 'val_acc_comparison.png'])
+    file_fig = ''.join(string for string in [absPath,'data/results/', folder, task, 'val_acc_comparison.png'])
     plt.savefig(file_fig)
     plt.show()
 
@@ -80,11 +80,11 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "loss"].values[0], label=i)
-    plt.title('%s- models training loss (holdout=%i)' %(task, k))
+    plt.title('%s- models training loss (holdout=%i)' %(task_string, k))
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend()
-    file_fig = ''.join(string for string in [absPath,'data/results/', folder, 'train_loss_comparison.png'])
+    file_fig = ''.join(string for string in [absPath,'data/results/', folder, task, 'train_loss_comparison.png'])
     plt.savefig(file_fig)
     plt.show()
 
@@ -92,16 +92,17 @@ def plotting_history(df, task, folder, k):
     fig = plt.figure()
     for i in history_df["model_type"]:
         plt.plot(history_df.loc[history_df.model_type==i, "val_loss"].values[0], label=i)
-    plt.title('%s- models validation loss (holdout=%i)' %(task, k))
+    plt.title('%s- models validation loss (holdout=%i)' %(task_string, k))
     plt.ylabel('val loss')
     plt.xlabel('epoch')
     plt.legend()
-    file_fig = ''.join(string for string in [absPath,'data/results/', folder, 'val_loss_comparison.png'])
+    file_fig = ''.join(string for string in [absPath,'data/results/', folder, task, 'val_loss_comparison.png'])
     plt.savefig(file_fig)
     plt.show()
 
-def processing_roc_auc(df, metrics):
+def processing_roc_auc(df, metrics, list_paddings):
     """Processing ROC curves and AUC to be plotted"""
+    df.columns = list_paddings
     df= df.reset_index(0)
     df = df.melt(id_vars='index')
     if metrics == "roc":
@@ -111,52 +112,57 @@ def processing_roc_auc(df, metrics):
         df = df.drop('value',axis=1)
     return df
 
-def plotting_auc_acc_boxplots(df, folder, metrics, nfolds, task):
+def plotting_auc_acc_boxplots(df, folder, metrics, nfolds, task_string, task):
     """Plotting AUC/accuracy/scores on test values in boxplots"""
     if metrics == "auc":
-        titlee = "%s - AUC (%i holdouts)" %(task, nfolds)
+        titlee = "%s - AUC (%i holdouts)" %(task_string, nfolds)
         filename = "aucs_comparison.pdf"
-        x="variable"
+        x = "variable"
     elif metrics == "accuracy":
-        titlee = "%s - Test accuracy (%i holdouts)" %(task, nfolds)
+        titlee = "%s - Accuracy on test (%i holdouts)" %(task_string, nfolds)
         filename = "test_accuracy_comparison.pdf"
-        x="variable"
+        x = "variable"
     
     p = (ggplot(df, aes(x=x, y="value", fill=x))
          +geom_boxplot()
          + scale_fill_brewer(palette="Set3", type='qual')
          +theme_bw()
-         +theme(figure_size=(12,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=10),
-                legend_text=element_text(size=10), strip_text_x = element_text(size=10), axis_text_x = element_blank())
+        +theme(aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=12),
+                legend_text=element_text(size=14), strip_text_x = element_text(size=10), axis_text_x = element_blank(),
+          legend_key_size = 14, axis_title_y=element_blank(), axis_title_x=element_blank(), 
+           #legend_position="bottom", legend_box="horizontal", 
+           plot_title = element_text(size=20))
          + ggtitle(titlee)
     )
-    file_auc = ''.join(string for string in [absPath,'data/results/', folder])
+    p
+    file_auc = ''.join(string for string in [absPath,'data/results/', folder, task])
     p.save(path = file_auc, format = 'pdf', dpi=300, filename=filename)
     return p
 
-def plotting_ROC_curves(df, folder, nfolds, task, list_paddings):
+def plotting_ROC_curves(df, folder, nfolds, task_string, list_paddings, task):
     """Plotting ROC curves"""
     k = random.randint(0, nfolds-1)
     df = df.loc[df["index"] == k]
     fig = plt.figure(figsize=(12,9))
     lw = 3
     for i in list_paddings:
-        plt.plot(df.loc[df.variable==i, "fpr"].values[0], df.loc[df.variable==i, "tpr"].values[0], label=i)
+        plt.plot(df.loc[df.variable==i, "fpr"].values[0], df.loc[df.variable==i, "tpr"].values[0], label=i, lw=3)
     #plt.plot(fpr, tpr, lw=lw)
-    plt.plot([0, 1], [0, 1], lw=1, linestyle='--')
+    plt.plot([0, 1], [0, 1], lw=2, linestyle='--')
+    plt.axis('scaled')
     plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate', fontsize = 14)
-    plt.ylabel('True Positive Rate', fontsize = 14)
-    plt.legend(prop={'size': 12})
-    plt.title("%s - ROC curves (holdout=%i)" %(task,k), size=18)
-    file_fig = ''.join(string for string in [absPath,'data/results/', folder, 'ROC_curves.png'])
+    plt.ylim([0.0, 1.00])
+    plt.xlabel('False Positive Rate', fontsize = 20)
+    plt.ylabel('True Positive Rate', fontsize = 20)
+    plt.legend(prop={'size': 18})
+    plt.title("%s - ROC curves (holdout=%i)" %(task_string,k), size=24)
+    file_fig = ''.join(string for string in [absPath,'data/results/', folder, task, 'ROC_curves.png'])
     plt.savefig(file_fig)
     plt.show()
     
-def processing_metrics_results(list_paddings, folder, nfolds):
+def processing_metrics_results(list_paddings, folder, task, nfolds):
     """It process the saved metrics from the models and returns a dataframe with F1-Score, precision and recall and another dataframe with accuracy on test"""
-    metrics, k = collecting_metrics_folds("resulting_metrics", list_paddings, folder, nfolds)
+    metrics, k = collecting_metrics_folds("resulting_metrics", list_paddings, folder, task, nfolds)
     accu = metrics.apply(lambda x: [y[0] for y in x])
     scores = metrics.apply(lambda x: [y[2] for y in x])
     
@@ -172,21 +178,30 @@ def processing_metrics_results(list_paddings, folder, nfolds):
     scores_final = pd.concat(list_dfs)
     scores_final = scores_final.drop("support", 1)
     scores_final = scores_final.melt(id_vars=["enz_type", "index", "type_padding"])
+    
+    if task == "task2/":
+        dicti_enz = {"0":"1", "1":"2", "2":"3", "3":"4", "4":"5", "5":"6", "6":"7", "macro avg": "macro avg", 
+             "micro avg": "micro avg", "weighted avg": "weighted avg"}
+        scores_final["enz_type"] = scores_final["enz_type"].apply(lambda x: dicti_enz[x])
     #processing test accuracy
     accu = accu.reset_index().melt(id_vars='index')
     return scores_final, accu
-
-def plotting_scores_boxplots(df, folder, nfolds, task):
+#revisar1!!
+def plotting_scores_boxplots(df, folder, nfolds, task_string, task):
     """Plotting F1-score/precision/recall on test values in boxplots"""
     p = (ggplot(df, aes(x='type_padding', y="value", fill='type_padding'))
-         +geom_boxplot()
+         +geom_boxplot(outlier_size=1)
          + scale_fill_brewer(palette="Set3", type='qual')
          +theme_bw()
-         +theme(figure_size=(12,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=10),
-                legend_text=element_text(size=10), strip_text_x = element_text(size=10), axis_text_x = element_blank())
-         + facet_grid("enz_type~variable")
-         + ggtitle("%s - performance metrics (%i holdouts)" %(task, nfolds))
+         +theme(figure_size=(24,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=9),
+                legend_text=element_text(size=12), strip_text_x = element_text(size=9), axis_text_x = element_blank(),
+               strip_text_y = element_text(size=9), plot_title = element_text(size=15), axis_title_y = element_blank(),
+               axis_title_x = element_text(size = 9), legend_key_size = 12, legend_position="bottom", 
+                legend_box="horizontal")
+         + facet_grid("variable~enz_type")
+         + ggtitle("%s - performance metrics (%i holdouts)" %(task_string, nfolds))
+         + guides(fill=guide_legend(nrow=1))
     )
-    file_met = ''.join(string for string in [absPath,'data/results/', folder])
+    file_met = ''.join(string for string in [absPath,'data/results/', folder, task])
     p.save(path = file_met, format = 'pdf', dpi=300, filename="scores.pdf")
     return p
