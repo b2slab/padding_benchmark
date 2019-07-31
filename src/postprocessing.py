@@ -248,50 +248,50 @@ def giffing_weights(folder, layers, model_type):
 
 def processing_results(folder, task, model_type, idx, i_test, labels):
     """Processing results (all together)"""
-        his_folder = ''.join(string for string in [absPath, 'data/results/', folder, task, model_type, 
+    his_folder = ''.join(string for string in [absPath, 'data/results/', folder, task, model_type, 
                                                    '/', str(idx)])
-        history = plot_history(his_folder)
-        path_to_cp = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, model_type, 
+    history = plot_history(his_folder)
+    path_to_cp = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, model_type, 
                                             '/', str(idx)])
-        model, best_path = load_best_model(history, path_to_cp)
-        cps_loc = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, model_type, 
+    model, best_path = load_best_model(history, path_to_cp)
+    cps_loc = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, model_type, 
                                             '/', str(idx), '/*.hdf5'])
-        #removing the rest of weights
-        fileList = glob.glob(cps_loc, recursive=True)
-        fileList.remove(best_path)
-        if len(fileList) >1:
-            for filePath in fileList:
-                try:
-                    os.remove(filePath)
-                except OSError:
-                    print("Error while deleting file")
-        #loading test data        
-        if model_type == "aug_padding":
-            file_data = os.path.join(absPath, 'data/', folder, 'aug_data.h5')
-        else:
-            file_data = os.path.join(absPath, 'data/', folder, 'data.h5')
-        h5f = h5py.File(file_data, 'r')
+    #removing the rest of weights
+    fileList = glob.glob(cps_loc, recursive=True)
+    fileList.remove(best_path)
+    if len(fileList) >1:
+        for filePath in fileList:
+            try:
+                os.remove(filePath)
+            except OSError:
+                print("Error while deleting file")
+    #loading test data        
+    if model_type == "aug_padding":
+        file_data = os.path.join(absPath, 'data/', folder, 'aug_data.h5')
+    else:
+        file_data = os.path.join(absPath, 'data/', folder, 'data.h5')
+    h5f = h5py.File(file_data, 'r')
         
-        instarget = Target('AAAAAA')
-        x_test = h5f[model_type][sorted(i_test)]
-        x_test = instarget.int_to_onehot(list(x_test), len(dicti))
-        y_test = h5f[labels][sorted(i_test)]
+    instarget = Target('AAAAAA')
+    x_test = h5f[model_type][sorted(i_test)]
+    x_test = instarget.int_to_onehot(list(x_test), len(dicti))
+    y_test = h5f[labels][sorted(i_test)]
         
-        #predicting 
-        y_predprob = model.predict(x_test)
-        y_pred = y_predprob.argmax(axis=-1)
-        y_test_scalar = y_test.argmax(axis=-1)
-        y_prob = y_predprob[:,1]
+    #predicting 
+    y_predprob = model.predict(x_test)
+    y_pred = y_predprob.argmax(axis=-1)
+    y_test_scalar = y_test.argmax(axis=-1)
+    y_prob = y_predprob[:,1]
     
-        print(Counter(y_pred))
+    print(Counter(y_pred))
         
-        #confusion matrix
-        confusion_matrix(y_test_scalar, y_pred, his_folder)
+    #confusion matrix
+    confusion_matrix(y_test_scalar, y_pred, his_folder)
         
-        if task == "task1/":
-            #AUC
-            file_auc = ''.join(string for string in [his_folder, '/AUC.pickle'])
-            compute_roc(y_test_scalar, y_prob, his_folder)
+    if task == "task1/":
+        #AUC
+        file_auc = ''.join(string for string in [his_folder, '/AUC.pickle'])
+        compute_roc(y_test_scalar, y_prob, his_folder)
     
-            computing_partial_auc(y_test_scalar, y_prob, his_folder)
+        computing_partial_auc(y_test_scalar, y_prob, his_folder)
     

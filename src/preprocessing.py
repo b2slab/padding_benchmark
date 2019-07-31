@@ -20,6 +20,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 from collections import Counter
 from sklearn.model_selection import StratifiedShuffleSplit
+from itertools import chain
+from sklearn import preprocessing
+from sklearn.decomposition import PCA
 
 #root
 absPath = '/home/angela/padding_EBI/'
@@ -291,3 +294,70 @@ def keeping_indices_enzymes(labels_task1, indices, folder, name_file, kfold_bool
         file_idcs = os.path.join(absPath, 'data/', folder, name_file)
         with open(file_idcs, "wb") as output_file:
             pickle.dump(k_indices, output_file)
+            
+def train_pca(folder, type_padding, data_file):
+    """Train Principal component analysis"""
+    file_data = os.path.join(absPath, 'data/', folder, data_file)
+    h5f = h5py.File(file_data, 'r')
+    n_comp = len(h5f[type_padding])
+    lista_dicts = []
+
+    #Loading data and flatten
+    for idx,i in enumerate(h5f[type_padding]):
+        x = i.flatten()
+        leen = len(x)
+        name_seq = ["seq_"+str(i) for i in range(1,leen+1)]
+        dicti = {n: d for n, d in zip(name_seq, x)} 
+        #proteins_df.loc[idx,'data'] = x
+        dicti.update({'class_task1' : h5f['labels_task1'][idx], 'class_task2' : h5f['labels_task2'][idx]})
+        lista_dicts.append(dicti)
+    h5f.close()
+    #converting to DataFrame
+    proteins_df = pd.DataFrame(lista_dicts)
+    proteins_df.head()
+    
+    #simplifying labels
+    proteins_df['class_task2_bin'] = np.array([0 if list(x) ==[0., 0., 0., 0., 0., 0., 0.] else (x.argmax(-1)+1) 
+                                           for x in list(proteins_df['class_task2'])])
+
+    proteins_df['class_task1_bin'] = np.array([0 if list(x) ==[1., 0.] else 1 
+                                           for x in list(proteins_df['class_task1'])])
+
+    proteins_df.drop(["class_task1", "class_task2"], axis=1, inplace=True)
+    
+    #preparing data 
+    npdesc = proteins_df.drop(['class_task2_bin', 'class_task1_bin'], axis=1).values
+    scaler = preprocessing.StandardScaler().fit(npdesc)
+    npdesc = scaler.transform(npdesc)
+
+    binEnzyme_list = proteins_df.loc[:, 'class_task1_bin'].values
+    typeEnzyme_list = proteins_df.loc[:, 'class_task2_bin'].astype(int).values
+    
+    #training PCA
+    pca = PCA(n_components=2)
+    pca.fit(npdesc)
+    
+    pc_tr = pca.transform(npdesc)
+    
+    print("Explained variance by principal components are %s" % pca.explained_variance_ratio_)
+    
+    return pc_tr, binEnzyme_list, typeEnzyme_list, pca.explained_variance_ratio_
+
+def plotting_pca(pc_tr, diffe, labs, padding_type, ax, explained_variances, type_plot="qualitative"):
+    """Plotting PCA"""
+    pc1 = str(round(explained_variances[0]*100))
+    pc2 = str(round(explained_variances[1]*100))
+    if type_plot == "qualitative":
+        cm = plt.get_cmap('Set3')
+        pc_tr_l = np.concatenate((pc_tr, diffe[:, None]), axis=1)
+        sc = ax.scatter(pc_tr_l[:,0], pc_tr_l[:,1], c=diffe, edgecolor='none', alpha=0.7, cmap=cm)
+        lp = lambda i: ax.plot([],color=cm(sc.norm(i)), mec="none", label=labs[i], ls="", marker="o")[0]
+        handles = [lp(i) for i in np.unique(diffe)]
+        ax.legend(handles=handles)
+    else:
+        pc_tr_l = np.concatenate((pc_tr, diffe[:, None]), axis=1)
+        sc = ax.scatter(pc_tr_l[:,0], pc_tr_l[:,1], c=diffe, edgecolor='none', alpha=0.7)
+    ax.set(xlabel="PC1 (%s %%)" %pc1,ylabel="PC2  (%s %%)" %pc2)
+    ax.set_title('PCA: %s' %padding_type) 
+    
+    

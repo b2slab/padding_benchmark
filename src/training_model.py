@@ -24,6 +24,8 @@ sys.path.insert(0, absPath)
 
 from src.Target import Target
 from src.callbacks import *
+from src.model_architecture import *
+
 
 np.random.seed(8)
 random.seed(8)    
@@ -137,8 +139,10 @@ def calling_callbacks(folder_cp, folder_wei, model_type, x_val, y_val, datasets_
         callbacks_list.append(weights)
     return callbacks_list
 
-def model_training(model_type, folder, task, idx, callbacks_list, architecture, max_len, dict_size,
-                  n_neur, n_class, drop_per, drop_hid, final_act, epochss, n_filt = None, 
+def model_training(model_type, folder, task, idx, callbacks_list, train_generator, val_generator,
+                   architecture, max_len, dict_size, batch_size,
+                  n_neur, n_class, drop_per, drop_hid, final_act, epochss, 
+                   len_train, len_val, n_filt = None, 
                    kernel_size=None, pool_size=None):
     """Training model"""
     folder_cp = ''.join(string for string in [folder, task, model_type, '/', str(idx)])
