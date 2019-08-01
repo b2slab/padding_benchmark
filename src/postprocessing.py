@@ -28,6 +28,7 @@ absPath = '/home/angela/padding_EBI/'
 sys.path.insert(0, absPath)
 
 from src.Target import Target
+from src.preprocessing import *
 
 np.random.seed(8)
 random.seed(8)
@@ -248,6 +249,7 @@ def giffing_weights(folder, layers, model_type):
 
 def processing_results(folder, task, model_type, idx, i_test, labels):
     """Processing results (all together)"""
+    dicti = creating_dict()
     his_folder = ''.join(string for string in [absPath, 'data/results/', folder, task, model_type, 
                                                    '/', str(idx)])
     history = plot_history(his_folder)
