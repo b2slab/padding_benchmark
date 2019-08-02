@@ -60,43 +60,43 @@ class Target(object):
             seq = seq + x[-1]
         return seq
     
-    def stretching_seq_nonzeros(x,max_len):
-    "This function is like stretch_padding but instead of padding with zeros, it pads with the closest amino acid"
-    x_len = len(x)
-    dif_len = max_len - x_len #Number of padding zeros 
-    seq = "" #New encoding sequence to build
-    if x_len > dif_len:
-        #x_len > dif_len
-        xIndex = 0
-        for i in range(dif_len):
-            xChunk = round(x_len / (dif_len + 1))
-            if xChunk==1:
-                seq = "".join(string for string in [seq, x[xIndex:(xIndex+xChunk)], x[(xIndex)]]) 
-            else:
-                seq = "".join(string for string in [seq, x[xIndex:(xIndex+xChunk)], x[(xIndex+xChunk-1)]])
-            xIndex = xIndex + xChunk
-            x_len = x_len - xChunk
-            dif_len = dif_len - 1
-    
-        seq = seq + x[xIndex]
-    if  x_len <= dif_len:
-        lastPad= round((dif_len)/(x_len))
-        for idx, c in enumerate(x[:-1]):
-            yPad = round(dif_len/(x_len-1))
-            miniPad = int(yPad/2)
-            if yPad%2 ==0:
-                seq = "".join(string for string in [seq, c, c*miniPad])
-                seq = "".join(string for string in [seq, x[idx+1]])
-            else:
-                if miniPad == 0:
-                    seq = "".join(string for string in [seq, c, c])
+    def stretching_seq_nonzeros(self, x,max_len):
+        """This function is like stretch_padding but instead of padding with zeros, it pads with the closest amino acid"""
+        x_len = len(x)
+        dif_len = max_len - x_len #Number of padding zeros 
+        seq = "" #New encoding sequence to build
+        if x_len > dif_len:
+            #x_len > dif_len
+            xIndex = 0
+            for i in range(dif_len):
+                xChunk = round(x_len / (dif_len + 1))
+                if xChunk==1:
+                    seq = "".join(string for string in [seq, x[xIndex:(xIndex+xChunk)], x[(xIndex)]]) 
                 else:
+                    seq = "".join(string for string in [seq, x[xIndex:(xIndex+xChunk)], x[(xIndex+xChunk-1)]])
+                xIndex = xIndex + xChunk
+                x_len = x_len - xChunk
+                dif_len = dif_len - 1
+    
+            seq = seq + x[xIndex]
+        if  x_len <= dif_len:
+            lastPad= round((dif_len)/(x_len))
+            for idx, c in enumerate(x[:-1]):
+                yPad = round(dif_len/(x_len-1))
+                miniPad = int(yPad/2)
+                if yPad%2 ==0:
                     seq = "".join(string for string in [seq, c, c*miniPad])
-                    seq = "".join(string for string in [seq, x[idx+1]*(miniPad+1)])
-            x_len = x_len - 1
-            dif_len = dif_len - yPad
-        seq = seq + x[-1]
-    return seq
+                    seq = "".join(string for string in [seq, x[idx+1]*miniPad])
+                else:
+                    if miniPad == 0:
+                        seq = "".join(string for string in [seq, c, c])
+                    else:
+                        seq = "".join(string for string in [seq, c, c*miniPad])
+                        seq = "".join(string for string in [seq, x[idx+1]*(miniPad+1)])
+                x_len = x_len - 1
+                dif_len = dif_len - yPad
+            seq = seq + x[-1]
+        return seq
     
     def padding_seq_position(self, max_len, pad_type="post"):
         """ Pads the sequence pre/post/mid/stretch/ext/rdm """
@@ -119,6 +119,7 @@ class Target(object):
             return padded_seq
         elif pad_type == "zoom":
             padded_seq = self.stretching_seq_nonzeros(prot_string, max_len)
+            return padded_seq
         elif pad_type == "ext":
             zeross = '0' * int(diflen/2)
             if diflen%2 == 0:

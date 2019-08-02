@@ -68,6 +68,7 @@ def creating_dict():
 #vamos a dejar el onehot para el batch generator pot si hay muchos datos
 def processing_sequences(df, type_padding, max_len):
     """ Processing amino acid sequences to an array of padded integers"""
+    #print(type_padding)
     padding_short = type_padding.split("_")[0]
     #Converting sequence to Target
     df['target']= df['Sequence'].apply(lambda x: Target(x))
@@ -78,6 +79,7 @@ def processing_sequences(df, type_padding, max_len):
     seqs_padded = df['target'].apply(lambda x: x.padding_seq_position(max_len, padding_short))
     # 2nd: we convert amino acid sequences to integer sequences
     print(seqs_padded)
+    #print(len(seqs_padded[0]), len(seqs_padded[1]), len(seqs_padded[2])) 
     seqs_int = [instarget.string_to_int(x, aa_to_int) for x in seqs_padded]
     #this is simply to convert it to an array, I am NOT padding again
     seqs_int_array = sequence.pad_sequences(sequences=seqs_int, maxlen=max_len)
