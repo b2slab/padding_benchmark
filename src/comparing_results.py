@@ -50,12 +50,14 @@ def collecting_metrics_folds(metrics, list_paddings, folder, task, n_fold):
 
 def plotting_history(df, task_string, folder, task, k):
     """It doesn't make much sense to plot history of all the folds. We choose one and plot it"""
+    color = ["#8DD3C7", "#FFFFB3","#BEBADA","#FB8072","#80B1D3","#FDB462","#B3DE69",
+         "#FCCDE5","#D9D9D9","#BC80BD","#CCEBC5","#FFED6F"]
     history_df = df.transpose().reset_index(level=0)
     history_df.columns = ["model_type", 'acc', 'loss', 'val_acc', 'val_loss']
     
     fig = plt.figure()
-    for i in history_df["model_type"]:
-        plt.plot(history_df.loc[history_df.model_type==i, "acc"].values[0], label=i)
+    for idx,i in enumerate(sorted(history_df["model_type"])):
+        plt.plot(history_df.loc[history_df.model_type==i, "acc"].values[0], label=i, c=color[idx])
     plt.title('%s- models training accuracy (holdout=%i)' %(task_string, k))
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
@@ -66,8 +68,8 @@ def plotting_history(df, task_string, folder, task, k):
     
     # summarize history for val acc
     fig = plt.figure()
-    for i in history_df["model_type"]:
-        plt.plot(history_df.loc[history_df.model_type==i, "val_acc"].values[0], label=i)
+    for idx,i in enumerate(sorted(history_df["model_type"])):
+        plt.plot(history_df.loc[history_df.model_type==i, "val_acc"].values[0], label=i, c=color[idx])
     plt.title('%s- models validation accuracy (holdout=%i)' %(task_string, k))
     plt.ylabel('val accuracy')
     plt.xlabel('epoch')
@@ -78,8 +80,8 @@ def plotting_history(df, task_string, folder, task, k):
 
     # summarize history for loss
     fig = plt.figure()
-    for i in history_df["model_type"]:
-        plt.plot(history_df.loc[history_df.model_type==i, "loss"].values[0], label=i)
+    for idx,i in enumerate(sorted(history_df["model_type"])):
+        plt.plot(history_df.loc[history_df.model_type==i, "loss"].values[0], label=i, c=color[idx])
     plt.title('%s- models training loss (holdout=%i)' %(task_string, k))
     plt.ylabel('loss')
     plt.xlabel('epoch')
@@ -90,8 +92,8 @@ def plotting_history(df, task_string, folder, task, k):
 
     # summarize history for validation loss
     fig = plt.figure()
-    for i in history_df["model_type"]:
-        plt.plot(history_df.loc[history_df.model_type==i, "val_loss"].values[0], label=i)
+    for idx,i in enumerate(sorted(history_df["model_type"])):
+        plt.plot(history_df.loc[history_df.model_type==i, "val_loss"].values[0], label=i, c=color[idx])
     plt.title('%s- models validation loss (holdout=%i)' %(task_string, k))
     plt.ylabel('val loss')
     plt.xlabel('epoch')
@@ -145,8 +147,10 @@ def plotting_ROC_curves(df, folder, nfolds, task_string, list_paddings, task):
     df = df.loc[df["index"] == k]
     fig = plt.figure(figsize=(12,9))
     lw = 3
-    for i in list_paddings:
-        plt.plot(df.loc[df.variable==i, "fpr"].values[0], df.loc[df.variable==i, "tpr"].values[0], label=i, lw=3)
+    color = ["#8DD3C7", "#FFFFB3","#BEBADA","#FB8072","#80B1D3","#FDB462","#B3DE69",
+         "#FCCDE5","#D9D9D9","#BC80BD","#CCEBC5","#FFED6F"]
+    for idx,i in enumerate(sorted(list_paddings)):
+        plt.plot(df.loc[df.variable==i, "fpr"].values[0], df.loc[df.variable==i, "tpr"].values[0], label=i, lw=3,  c=color[idx])
     #plt.plot(fpr, tpr, lw=lw)
     plt.plot([0, 1], [0, 1], lw=2, linestyle='--')
     plt.axis('scaled')
