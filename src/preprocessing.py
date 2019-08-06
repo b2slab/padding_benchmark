@@ -362,6 +362,7 @@ def plotting_pca(pc_tr, diffe, labs, padding_type, ax, explained_variances, type
         sc = ax.scatter(pc_tr_l[:,0], pc_tr_l[:,1], c=diffe, edgecolor='none', alpha=0.7)
     ax.set(xlabel="PC1 (%s %%)" %pc1,ylabel="PC2  (%s %%)" %pc2)
     ax.set_title('PCA: %s' %padding_type) 
+    return sc
     
 def training_tsnes(folder, type_padding, data_file, perplexity=40, n_iter=300):
     """training tSNE"""

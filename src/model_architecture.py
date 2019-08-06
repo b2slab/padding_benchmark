@@ -15,7 +15,7 @@ import h5py
 import tensorflow as tf
 import keras
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input, Flatten, Conv1D, MaxPooling1D, concatenate
+from keras.layers import Dense, Dropout, Input, Flatten, Conv1D, MaxPooling1D, concatenate, Flatten
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 from keras.backend.tensorflow_backend import set_session 
@@ -67,7 +67,8 @@ def building_1convdense_model_task1(max_len, dict_size, number_neurons, n_class,
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
     dense_seq3 = Dense(number_neurons[2], activation='relu')(dropout_seq2)
     dropout_seq3 = Dropout(drop_hid)(dense_seq3)
-    main_dense = Dense(n_class, activation=final_act)(dropout_seq3)
+    flatten = Flatten()(dropout_seq3)
+    main_dense = Dense(n_class, activation=final_act)(flatten)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
@@ -152,7 +153,8 @@ def building_1convdense_model_task2(max_len, dict_size, number_neurons, n_class,
     dropout_seq1 = Dropout(drop_hid)(dense_seq1)
     dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
-    main_dense = Dense(n_class, activation=final_act)(dropout_seq2)
+    flattenn = Flatten()(dropout_seq2)
+    main_dense = Dense(n_class, activation=final_act)(flattenn)
     print(model.summary())
     
     adamm = Adam()

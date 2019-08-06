@@ -154,7 +154,7 @@ def model_training(model_type, folder, task, idx, callbacks_list, train_generato
     folder_task =  ''.join(string for string in [folder, task])
     #deberia haber aqui muchos ifs para elegir el tipo de modelo
     model = model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class, drop_per, drop_hid, 
-                            final_act, n_filt=None, kernel_size=None, pool_size=None)
+                            final_act, n_filt=n_filt, kernel_size=kernel_size, pool_size=pool_size)
     #writing log file 
     log_file = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, 'log_file.txt' ]) 
     f = open(log_file, 'a+')
