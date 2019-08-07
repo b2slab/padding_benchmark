@@ -15,7 +15,7 @@ import h5py
 import tensorflow as tf
 import keras
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input, Flatten, Conv1D, MaxPooling1D, concatenate, Flatten
+from keras.layers import Dense, Dropout, Input, Flatten, Conv1D, MaxPooling1D, concatenate
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 from keras.backend.tensorflow_backend import set_session 
@@ -206,7 +206,7 @@ def model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class
     """Choosing model architecture and defining model"""
     if architecture == "only_denses":
         if task == "task1/":
-            model = building_2dense_model_task2(max_len, dict_size, n_neur, n_class, drop_per,
+            model = building_2dense_model_task1(max_len, dict_size, n_neur, n_class, drop_per,
                                                 drop_hid, final_act, folder)
         else:
             model = building_2dense_model_task2(max_len, dict_size, n_neur, n_class, 
