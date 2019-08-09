@@ -29,7 +29,7 @@ from src.Target import Target
 np.random.seed(8)
 random.seed(8)
 
-def building_3dense_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, final_act, folder):
+def building_3dense_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, final_act, folder, optimizer):
     """"Builds a model with three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
     input_seq = Input(shape=(max_len, dict_size), dtype='float32')
     dropout_seq = Dropout(drop_per)(input_seq)
@@ -45,7 +45,8 @@ def building_3dense_model_task1(max_len, dict_size, number_neurons, n_class, dro
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
-    adamm = Adam()
+    #adamm = Adam()
+    adamm = optimizer
     model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
@@ -72,7 +73,8 @@ def building_1convdense_model_task1(max_len, dict_size, number_neurons, n_class,
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
-    adamm = Adam()
+    #adamm = Adam()
+    adamm = optimizer
     model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
@@ -107,7 +109,8 @@ def building_stackconv_model_task1(max_len, dict_size, number_neurons, n_class, 
     main_dense = Dense(n_class, activation=final_act)(dropout_seq3)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     
-    adamm = Adam()
+    #adamm = Adam()
+    adamm = optimizer
     model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
 
     print(model.summary())
@@ -132,7 +135,8 @@ def building_2dense_model_task2(max_len, dict_size, number_neurons, n_class, dro
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
-    adamm = Adam()
+    #adamm = Adam()
+    adamm = optimizer
     model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
@@ -155,9 +159,12 @@ def building_1convdense_model_task2(max_len, dict_size, number_neurons, n_class,
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
     flattenn = Flatten()(dropout_seq2)
     main_dense = Dense(n_class, activation=final_act)(flattenn)
+    model = Model(inputs=[input_seq], outputs=[main_dense])
+
     print(model.summary())
     
-    adamm = Adam()
+    #adamm = Adam()
+    adamm = optimizer
     model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
@@ -192,7 +199,8 @@ def building_stackconv_model_task2(max_len, dict_size, number_neurons, n_class, 
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
-    adamm = Adam()
+    #adamm = Adam()
+    adamm = optimizer
     model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
     
     # saving the model
