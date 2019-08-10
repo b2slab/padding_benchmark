@@ -209,3 +209,91 @@ def plotting_scores_boxplots(df, folder, nfolds, task_string, task):
     file_met = ''.join(string for string in [absPath,'data/results/', folder, task])
     p.save(path = file_met, format = 'pdf', dpi=300, filename="scores.pdf")
     return p
+
+
+
+########## comparing different architectures
+def processing_metrics_dodge(list_paddings, folders, names_folders,task, nfolds):
+    """It process the saved metrics from the models and returns a dataframe with F1-Score, precision and recall and another dataframe with accuracy on test"""
+    scores_list = []
+    accu_list = []
+    for idx, folder in enumerate(folders):
+        metrics, k = collecting_metrics_folds("resulting_metrics", list_paddings, folder, task, nfolds)
+        accu = metrics.apply(lambda x: [y[0] for y in x])
+        scores = metrics.apply(lambda x: [y[2] for y in x])
+    
+        #processing scores
+        list_dfs = []
+        for i,row in scores.iterrows():
+            for pad in list_paddings:
+                formatted = pd.DataFrame(scores.loc[i, pad]).transpose().reset_index()
+                formatted.columns = ['enz_type', 'f1-score', 'precision', 'recall', 'support']
+                formatted['index'] = row.name
+                formatted['type_padding'] = pad
+                list_dfs.append(formatted)
+        scores_final = pd.concat(list_dfs)
+        scores_final["architecture"] = names_folders[idx]
+        scores_final = scores_final.drop("support", 1)
+        scores_final = scores_final.melt(id_vars=["enz_type", "index", "type_padding", "architecture"])
+    
+        if task == "task2/":
+            dicti_enz = {"0":"1", "1":"2", "2":"3", "3":"4", "4":"5", "5":"6", "6":"7", "macro avg": "macro avg", 
+                 "micro avg": "micro avg", "weighted avg": "weighted avg"}
+            scores_final["enz_type"] = scores_final["enz_type"].apply(lambda x: dicti_enz[x])
+        #processing test accuracy
+        accu = accu.reset_index().melt(id_vars='index')
+        accu["architecture"] = names_folders[idx]
+        scores_list.append(scores_final)
+        accu_list.append(accu)
+    return scores_list, accu_list
+
+
+def plotting_acc_dodge_boxplots(df, nfolds, task_string, task):
+    """Plotting AUC/accuracy/scores on test values in boxplots"""
+    titlee = "%s - Accuracy on test (%i holdouts)" %(task_string, nfolds)
+    filename = "test_accuracy_comparison_architectures.pdf"
+    x = "variable"
+    
+    p = (ggplot(df, aes(x=x, y="value", fill="architecture"))
+         +geom_boxplot(position="dodge")
+         + scale_fill_brewer(palette="Set3", type='qual')
+         +theme_bw()
+        +theme(aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=12),
+                legend_text=element_text(size=14), strip_text_x = element_text(size=10), 
+               axis_text_x = element_text(angle = 90, hjust = 1),
+          legend_key_size = 14, axis_title_y=element_blank(), 
+               #axis_title_x=element_blank(), 
+           #legend_position="bottom", legend_box="horizontal", 
+           plot_title = element_text(size=20))
+         + ggtitle(titlee)
+    )
+    p
+    file_auc = ''.join(string for string in [absPath,'data/results/', task])
+    if not os.path.exists(file_auc):
+        os.makedirs(file_auc)
+    p.save(path = file_auc, format = 'pdf', dpi=300, filename=filename)
+    return p
+
+def plotting_scores_arch(df, nfolds, task_string, task):
+    """Plotting F1-score/precision/recall on test values in boxplots"""
+    df = df[df.enz_type.isin(["micro avg", "macro avg", "weighted avg"])]
+    p = (ggplot(df, aes(x='type_padding', y="value", fill='architecture'))
+         +geom_boxplot(outlier_size=1, position="dodge")
+         + scale_fill_brewer(palette="Set3", type='qual')
+         +theme_bw()
+         +theme(figure_size=(24,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=13),
+                legend_text=element_text(size=13), strip_text_x = element_text(size=13), 
+                axis_text_x = element_text(angle=90, hjust=1),
+               strip_text_y = element_text(size=13), plot_title = element_text(size=20), axis_title_y = element_blank(),
+               axis_title_x = element_text(size = 13), legend_key_size = 13, #legend_position="bottom", 
+                legend_box="horizontal")
+         + facet_grid("variable~enz_type")
+         + ggtitle("%s - performance metrics (%i holdouts)" %(task_string, nfolds))
+         + guides(fill=guide_legend(nrow=1))
+    )
+    
+    file_met = ''.join(string for string in [absPath,'data/results/', task])
+    if not os.path.exists(file_met):
+        os.makedirs(file_met)
+    p.save(path = file_met, format = 'pdf', dpi=300, filename="scores_architecture.pdf")
+    return p
