@@ -121,6 +121,45 @@ def building_stackconv_model_task1(max_len, dict_size, number_neurons, n_class, 
     model.save(file_model)
     return model
 
+def building_convrnn_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
+                                 n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer=Adam()):
+    """"Builds a model with a convolutional layer, a bidirectional LSTM and three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
+    input_seq = Input(shape=(max_len, dict_size), dtype='float32')
+    dropout_seq = Dropout(drop_per)(input_seq)
+    
+    c1 = Conv1D(filters=n_filt, kernel_size=kernel_size, padding='same', strides=1, activation='relu')(dropout_seq)
+    pooled = MaxPooling1D(pool_size=pool_size, strides=None, padding='same')(c1)
+    
+    dropout_2 = Dropout(drop_hid)(pooled)
+    
+    bilstm_seq = Bidirectional(LSTM(n_hid, dropout=drop_hid, recurrent_dropout=drop_hid, activation='tanh'), merge_mode='concat')(dropout_2)
+    
+    #main_dense = Dense(n_class, activation=final_act)(bilstm_seq)
+    #model = Model(inputs=[input_seq], outputs=[main_dense])
+    
+    #Denses
+    dense_seq1 = Dense(number_neurons[0], activation='relu')(bilstm_seq)
+    dropout_seq1 = Dropout(drop_hid)(dense_seq1)
+    dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
+    dropout_seq2 = Dropout(drop_hid)(dense_seq2)
+    dense_seq3 = Dense(number_neurons[2], activation='relu')(dropout_seq2)
+    dropout_seq3 = Dropout(drop_hid)(dense_seq3)
+    flatten = Flatten()(dropout_seq3)
+    main_dense = Dense(n_class, activation=final_act)(flatten)
+    model = Model(inputs=[input_seq], outputs=[main_dense])
+    print(model.summary())
+    
+    #adamm = Adam()
+    adamm = optimizer
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
+    
+    # saving the model
+    file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
+
+    model.save(file_model)
+    return model
+
+
 def building_2dense_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, final_act, folder, 
                                 optimizer=Adam()):
     """"Builds a model with two Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
@@ -210,8 +249,45 @@ def building_stackconv_model_task2(max_len, dict_size, number_neurons, n_class, 
     model.save(file_model)
     return model
 
+
+def building_convrnn_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
+                                 n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer=Adam()):
+    """"Builds a model with a convolutional layer and three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
+    input_seq = Input(shape=(max_len, dict_size), dtype='float32')
+    dropout_seq = Dropout(drop_per)(input_seq)
+    
+    c1 = Conv1D(filters=n_filt, kernel_size=kernel_size, padding='same', strides=1, activation='relu')(dropout_seq)
+    pooled = MaxPooling1D(pool_size=pool_size, strides=None, padding='same')(c1)
+    
+    dropout_2 = Dropout(drop_hid)(pooled)
+    
+    bilstm_seq = Bidirectional(LSTM(n_hid, dropout=drop_hid, recurrent_dropout=drop_hid, activation='tanh'), merge_mode='concat')(dropout_2)
+    
+    #main_dense = Dense(n_class, activation=final_act)(bilstm_seq)
+    #model = Model(inputs=[input_seq], outputs=[main_dense])
+    
+    #Denses
+    dense_seq1 = Dense(number_neurons[0], activation='relu')(bilstm_seq)
+    dropout_seq1 = Dropout(drop_hid)(dense_seq1)
+    dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
+    dropout_seq2 = Dropout(drop_hid)(dense_seq2)
+    flattenn = Flatten()(dropout_seq2)
+    main_dense = Dense(n_class, activation=final_act)(flattenn)
+    model = Model(inputs=[input_seq], outputs=[main_dense])
+    print(model.summary())
+    
+    #adamm = Adam()
+    adamm = optimizer
+    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
+    
+    # saving the model
+    file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
+
+    model.save(file_model)
+    return model
+
 def model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class, drop_per, drop_hid, final_act, 
-                 n_filt=None, kernel_size=None, pool_size=None, optimizer=Adam()):
+                 n_filt=None, kernel_size=None, pool_size=None, nhid=None, optimizer=Adam()):
     """Choosing model architecture and defining model"""
     if architecture == "only_denses":
         if task == "task1/":
@@ -236,4 +312,13 @@ def model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class
         else:
             model = building_stackconv_model_task2(max_len, dict_size, n_neur, n_class, drop_per, 
                                                     drop_hid, n_filt, kernel_size, pool_size, final_act, folder, optimizer)
+    elif architecture == "rnn_conv":
+        if task == "task1/":
+            building_convrnn_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
+                                 n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer)
+            
+        else:
+            building_convrnn_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
+                                 n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer)
+
     return model
