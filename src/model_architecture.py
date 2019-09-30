@@ -15,7 +15,7 @@ import h5py
 import tensorflow as tf
 import keras
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input, Flatten, Conv1D, MaxPooling1D, concatenate
+from keras.layers import Dense, Dropout, Input, Flatten, Conv1D, MaxPooling1D, concatenate, Bidirectional, LSTM
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 from keras.backend.tensorflow_backend import set_session 
@@ -106,7 +106,8 @@ def building_stackconv_model_task1(max_len, dict_size, number_neurons, n_class, 
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
     dense_seq3 = Dense(number_neurons[2], activation='relu')(dropout_seq2)
     dropout_seq3 = Dropout(drop_hid)(dense_seq3)
-    main_dense = Dense(n_class, activation=final_act)(dropout_seq3)
+    flatten = Flatten()(dropout_seq3)
+    main_dense = Dense(n_class, activation=final_act)(flatten)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     
     #adamm = Adam()
@@ -122,7 +123,7 @@ def building_stackconv_model_task1(max_len, dict_size, number_neurons, n_class, 
     return model
 
 def building_convrnn_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
-                                 n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer=Adam()):
+                                 n_filt, kernel_size, pool_size, n_hid, final_act, folder, optimizer=Adam()):
     """"Builds a model with a convolutional layer, a bidirectional LSTM and three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
     input_seq = Input(shape=(max_len, dict_size), dtype='float32')
     dropout_seq = Dropout(drop_per)(input_seq)
@@ -143,9 +144,9 @@ def building_convrnn_model_task1(max_len, dict_size, number_neurons, n_class, dr
     dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
     dense_seq3 = Dense(number_neurons[2], activation='relu')(dropout_seq2)
-    dropout_seq3 = Dropout(drop_hid)(dense_seq3)
-    flatten = Flatten()(dropout_seq3)
-    main_dense = Dense(n_class, activation=final_act)(flatten)
+    dropout_seq3 = Dropout(drop_hid)(dense_seq3)  
+    #flatten = Flatten()(dropout_seq3)
+    main_dense = Dense(n_class, activation=final_act)(dropout_seq3)#(flatten)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
@@ -235,7 +236,8 @@ def building_stackconv_model_task2(max_len, dict_size, number_neurons, n_class, 
     dropout_seq1 = Dropout(drop_hid)(dense_seq1)
     dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
-    main_dense = Dense(n_class, activation=final_act)(dropout_seq2)
+    flatten = Flatten()(dropout_seq2)
+    main_dense = Dense(n_class, activation=final_act)(flatten)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
@@ -251,7 +253,7 @@ def building_stackconv_model_task2(max_len, dict_size, number_neurons, n_class, 
 
 
 def building_convrnn_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
-                                 n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer=Adam()):
+                                 n_filt, kernel_size, pool_size, n_hid, final_act, folder, optimizer=Adam()):
     """"Builds a model with a convolutional layer and three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
     input_seq = Input(shape=(max_len, dict_size), dtype='float32')
     dropout_seq = Dropout(drop_per)(input_seq)
@@ -271,8 +273,8 @@ def building_convrnn_model_task2(max_len, dict_size, number_neurons, n_class, dr
     dropout_seq1 = Dropout(drop_hid)(dense_seq1)
     dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
-    flattenn = Flatten()(dropout_seq2)
-    main_dense = Dense(n_class, activation=final_act)(flattenn)
+    #flattenn = Flatten()(dropout_seq2)
+    main_dense = Dense(n_class, activation=final_act)(dropout_seq2)#(flattenn)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
@@ -307,18 +309,18 @@ def model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class
                                                    optimizer)
     elif architecture == "stack_conv":
         if task == "task1/":
-            building_stackconv_model_task1(max_len, dict_size, n_neur, n_class, drop_per, drop_hid, 
+            model = building_stackconv_model_task1(max_len, dict_size, n_neur, n_class, drop_per, drop_hid, 
                                             n_filt, kernel_size, pool_size, final_act, folder, optimizer)
         else:
             model = building_stackconv_model_task2(max_len, dict_size, n_neur, n_class, drop_per, 
                                                     drop_hid, n_filt, kernel_size, pool_size, final_act, folder, optimizer)
     elif architecture == "rnn_conv":
         if task == "task1/":
-            building_convrnn_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
+            model = building_convrnn_model_task1(max_len, dict_size, n_neur, n_class, drop_per, drop_hid, 
                                  n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer)
             
         else:
-            building_convrnn_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, 
+            model = building_convrnn_model_task2(max_len, dict_size, n_neur, n_class, drop_per, drop_hid, 
                                  n_filt, kernel_size, pool_size, nhid, final_act, folder, optimizer)
 
     return model
