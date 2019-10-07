@@ -293,7 +293,7 @@ def model_choice(architecture, task, folder, max_len, dict_size, n_neur, n_class
     """Choosing model architecture and defining model"""
     if architecture == "only_denses":
         if task == "task1/":
-            model = building_2dense_model_task1(max_len, dict_size, n_neur, n_class, drop_per,
+            model = building_3dense_model_task1(max_len, dict_size, n_neur, n_class, drop_per,
                                                 drop_hid, final_act, folder, optimizer)
         else:
             model = building_2dense_model_task2(max_len, dict_size, n_neur, n_class, 
