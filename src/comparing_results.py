@@ -254,18 +254,19 @@ def plotting_acc_dodge_boxplots(df, nfolds, task_string, task):
     filename = "test_accuracy_comparison_architectures.pdf"
     x = "variable"
     
-    p = (ggplot(df, aes(x=x, y="value", fill="architecture"))
+    p = (ggplot(df, aes(x=x, y="value", fill=x))
          +geom_boxplot(position="dodge")
          + scale_fill_brewer(palette="Set3", type='qual')
          +theme_bw()
-        +theme(aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=12),
-                legend_text=element_text(size=14), strip_text_x = element_text(size=10), 
-               axis_text_x = element_text(angle = 90, hjust = 1),
-          legend_key_size = 14, axis_title_y=element_blank(), 
-               #axis_title_x=element_blank(), 
-           #legend_position="bottom", legend_box="horizontal", 
-           plot_title = element_text(size=20))
+        +theme(figure_size=(12,25), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=12),
+                legend_text=element_text(size=12), strip_text_x = element_text(size=10), 
+               axis_text_x = element_blank(), #element_text(angle = 90, hjust = 1),
+          legend_key_size = 12, axis_title_y=element_blank(), 
+               axis_title_x=element_blank(), 
+           legend_position="bottom", legend_box="horizontal", 
+           plot_title = element_text(size=14))
          + ggtitle(titlee)
+         + facet_grid("~architecture")
     )
     p
     file_auc = ''.join(string for string in [absPath,'data/results/', task])
@@ -274,21 +275,23 @@ def plotting_acc_dodge_boxplots(df, nfolds, task_string, task):
     p.save(path = file_auc, format = 'pdf', dpi=300, filename=filename)
     return p
 
-def plotting_scores_arch(df, nfolds, task_string, task):
+def plotting_scores_arch(df, nfolds, task_string, task, type_avg="weighted avg"):
     """Plotting F1-score/precision/recall on test values in boxplots"""
-    df = df[df.enz_type.isin(["micro avg", "macro avg", "weighted avg"])]
-    p = (ggplot(df, aes(x='type_padding', y="value", fill='architecture'))
+    #df = df[df.enz_type.isin(["micro avg", "macro avg", "weighted avg"])]
+    df = df[df.enz_type == type_avg]
+    p = (ggplot(df, aes(x='type_padding', y="value", fill='type_padding'))
          +geom_boxplot(outlier_size=1, position="dodge")
          + scale_fill_brewer(palette="Set3", type='qual')
          +theme_bw()
-         +theme(figure_size=(24,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=13),
-                legend_text=element_text(size=13), strip_text_x = element_text(size=13), 
-                axis_text_x = element_text(angle=90, hjust=1),
-               strip_text_y = element_text(size=13), plot_title = element_text(size=20), axis_title_y = element_blank(),
-               axis_title_x = element_text(size = 13), legend_key_size = 13, #legend_position="bottom", 
+         +theme(figure_size=(24,16), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=15),
+                legend_text=element_text(size=15), strip_text_x = element_text(size=15), 
+                axis_text_x = element_blank(), #element_text(angle=90, hjust=1),
+               strip_text_y = element_text(size=15), plot_title = element_text(size=20), axis_title_y = element_blank(),
+               axis_title_x = element_text(size = 15), legend_key_size = 14, legend_position="bottom", 
                 legend_box="horizontal")
-         + facet_grid("variable~enz_type")
-         + ggtitle("%s - performance metrics (%i holdouts)" %(task_string, nfolds))
+         #+ facet_grid("variable~enz_type")
+         + facet_grid("variable~architecture")
+         + ggtitle("%s - %s metrics (%i holdouts)" %(task_string, type_avg, nfolds))
          + guides(fill=guide_legend(nrow=1))
     )
     

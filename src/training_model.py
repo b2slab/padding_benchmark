@@ -57,14 +57,14 @@ def loading_val_data(x_name, y_name, i_val, h5_file):
     y_val = h5f[y_name][sorted(i_val)]
     return x_val, y_val
 
-def count_time(start, end, folder, model_type):
+def count_time(start, end, folder, model_type, task):
     """Count the time the model takes to run and save it to a file"""
     print("It has been ", str(datetime.timedelta(seconds=(end - start))))
     timee = (end - start)/3600
     #if the folder doesn't exist, create it
     if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/'])):
         os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/']))
-    file_time = ''.join(string for string in [absPath, 'data/results/', folder, model_type, '/time.pickle'])
+    file_time = ''.join(string for string in [absPath, 'data/results/', folder, task, model_type, '/time.pickle'])
 
     with open(file_time, "wb") as output_file:
         pickle.dump(timee, output_file)
@@ -176,7 +176,7 @@ def model_training(model_type, folder, task, idx, callbacks_list, train_generato
     end = time.time()
     formatted_endtime = datetime.datetime.now()
     print('Finishing time: %s \n' % formatted_endtime, file=f)
-    count_time(start, end, folder, model_type)
+    count_time(start, end, folder, model_type, task)
     saving_results(history, model_type, folder, task, idx, True)
     f.close()
     #return history
