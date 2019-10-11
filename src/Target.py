@@ -185,8 +185,9 @@ class Target(object):
         result = []   
         for j in x_int:
             if j == 0:
-                continue
-            result.append(list(diccionario.keys())[list(diccionario.values()).index(j)])
+                result.append("0")
+            else:
+                result.append(list(diccionario.keys())[list(diccionario.values()).index(j)])
         return result
     
     
