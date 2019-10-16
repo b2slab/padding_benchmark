@@ -36,7 +36,7 @@ np.random.seed(1)
 random.seed(1)
 
 def search_model (folder, fold, task, padding):
-    model_path = "".join((absPath, "data/checkpoint/", folder, task, list_paddings[2], "/", "1", "/"))
+    model_path = "".join((absPath, "data/checkpoint/", folder, task, padding, "/", str(fold), "/"))
     model_file = glob(os.path.join(model_path, "weights-*.hdf5"))[0]
     return model_file
 
@@ -133,6 +133,20 @@ def plot_pca(df, pca, type_plot, list_paddings=None):
                   alpha=0.8)
         ax.legend(types_enzymes, title = "Enzyme type")
         ax.grid()
+        
+    elif type_plot == "enz_type1":
+        types_enzymes = [0,1]
+        colors = ["#6CB89E", "#F38E73"]
+        for enz_type, color in zip(types_enzymes, colors):
+            indicesToKeep = df['enzyme_type'] == enz_type
+            #print(enz_type, df.loc[indicesToKeep, 'PC1'].shape)
+            ax.scatter(df.loc[indicesToKeep, 'PC1']
+               , df.loc[indicesToKeep, 'PC2']
+               , c = color
+               , s = 25,
+                  alpha=0.8)
+        ax.legend(types_enzymes, title = "Enzyme type")
+        ax.grid()
     else:
         ax.scatter(df.loc[:, 'PC1'], df.loc[:, 'PC2'], 
                    c=df.loc[:, 'sequence_length'], edgecolor='none', alpha=0.7)
@@ -149,7 +163,10 @@ def find_prot_labeled(folder, enz_label, quant=2, task = "task2", labels_label =
     indices_enzymes = []
     while len(indices_enzymes)<quant:
         idx = random_prot_idx(folder, task)
-        label_prot = np.argmax(f1[labels_label][idx]) + 1
+        if task == "task2":
+            label_prot = np.argmax(f1[labels_label][idx]) + 1
+        else:
+            label_prot = np.argmax(f1[labels_label][idx])
         if label_prot == enz_label:
             indices_enzymes.append(idx)
     return indices_enzymes
@@ -233,16 +250,6 @@ def plot_loadings(score,coeff,labels=None):
     plt.xlabel("PC{}".format(1))
     plt.ylabel("PC{}".format(2))
     plt.grid()
-    
-def int_to_aa(x_int, diccionario):
-    """Translate a list of integer numbers to a sequence of amino acids, given a dictionary"""
-    result = []   
-    for j in x_int:
-        if j == 0:
-            result.append("0")
-        else:
-            result.append(list(diccionario.keys())[list(diccionario.values()).index(j)])
-    return result
 
 def load_prot_aminoacids(folder, protein_index, padding, labels_label):
     data_path = os.path.join(absPath, "data/", folder, "data.h5")
@@ -251,7 +258,7 @@ def load_prot_aminoacids(folder, protein_index, padding, labels_label):
     instarget = Target('AAAAAA')
     seq_int = f1[padding][protein_index]
     aa_to_int = instarget.predefining_dict()
-    sequence_aas = int_to_aa(seq_int, aa_to_int)
+    sequence_aas = instarget.int_to_aa(seq_int, aa_to_int)
     label_prot = f1[labels_label][protein_index]
     return sequence_aas, label_prot
 
@@ -267,3 +274,25 @@ def add_sequences_length(final_df, df_indices):
     print(final_df.info())
     final_df["sequence_length"] = lista_lengths_unnested
     return final_df
+
+def myplot(score,coeff,labels=None):
+    plt.figure(figsize=(10,10))
+    xs = score[:,0]
+    ys = score[:,1]
+    n = coeff.shape[0]
+    scalex = 1.0/(xs.max() - xs.min())
+    scaley = 1.0/(ys.max() - ys.min())
+    #plt.scatter(xs * scalex,ys * scaley, 
+    #            #c = y
+    #           )
+    for i in range(n):
+        plt.arrow(0, 0, coeff[i,0], coeff[i,1],color = 'r',alpha = 0.5)
+        if labels is None:
+            plt.text(coeff[i,0]* 1.15, coeff[i,1] * 1.15, "Var"+str(i+1), color = 'g', ha = 'center', va = 'center')
+        else:
+            plt.text(coeff[i,0]* 1.15, coeff[i,1] * 1.15, labels[i], color = 'g', ha = 'center', va = 'center')
+    plt.xlim(-0.1,0.1)
+    plt.ylim(-0.1,0.1)
+    plt.xlabel("PC{}".format(1))
+    plt.ylabel("PC{}".format(2))
+    plt.grid()
