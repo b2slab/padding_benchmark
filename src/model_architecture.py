@@ -29,19 +29,45 @@ from src.Target import Target
 np.random.seed(8)
 random.seed(8)
 
+#def building_3dense_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, final_act, folder, optimizer=Adam()):
+#    """"Builds a model with three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
+#    input_seq = Input(shape=(max_len, dict_size), dtype='float32')
+#    dropout_seq = Dropout(drop_per)(input_seq)
+#    flatten_seq = Flatten()(dropout_seq)
+    #Denses
+#    dense_seq1 = Dense(number_neurons[0], activation='relu')(flatten_seq)
+#    dropout_seq1 = Dropout(drop_hid)(dense_seq1)
+#    dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
+#    dropout_seq2 = Dropout(drop_hid)(dense_seq2)
+#    dense_seq3 = Dense(number_neurons[2], activation='relu')(dropout_seq2)
+#    dropout_seq3 = Dropout(drop_hid)(dense_seq3)
+#    main_dense = Dense(n_class, activation=final_act)(dropout_seq3)
+#    model = Model(inputs=[input_seq], outputs=[main_dense])
+#    print(model.summary())
+    
+    #adamm = Adam()
+#    adamm = optimizer
+#    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
+    
+#    # saving the model
+#    file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
+
+#    model.save(file_model)
+#    return model
+
 def building_3dense_model_task1(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, final_act, folder, optimizer=Adam()):
     """"Builds a model with three Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
     input_seq = Input(shape=(max_len, dict_size), dtype='float32')
     dropout_seq = Dropout(drop_per)(input_seq)
-    flatten_seq = Flatten()(dropout_seq)
     #Denses
-    dense_seq1 = Dense(number_neurons[0], activation='relu')(flatten_seq)
+    dense_seq1 = Dense(number_neurons[0], activation='relu')(dropout_seq)
     dropout_seq1 = Dropout(drop_hid)(dense_seq1)
     dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
     dense_seq3 = Dense(number_neurons[2], activation='relu')(dropout_seq2)
     dropout_seq3 = Dropout(drop_hid)(dense_seq3)
-    main_dense = Dense(n_class, activation=final_act)(dropout_seq3)
+    flatten_seq = Flatten()(dropout_seq3)
+    main_dense = Dense(n_class, activation=final_act)(flatten_seq)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
@@ -161,18 +187,44 @@ def building_convrnn_model_task1(max_len, dict_size, number_neurons, n_class, dr
     return model
 
 
+#def building_2dense_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, final_act, folder, 
+#                                optimizer=Adam()):
+#    """"Builds a model with two Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
+#    input_seq = Input(shape=(max_len, dict_size), dtype='float32')
+#    dropout_seq = Dropout(drop_per)(input_seq)
+#    flatten_seq = Flatten()(dropout_seq)
+    #Denses
+#    dense_seq1 = Dense(number_neurons[0], activation='relu')(flatten_seq)
+#    dropout_seq1 = Dropout(drop_hid)(dense_seq1)
+#    dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
+#    dropout_seq2 = Dropout(drop_hid)(dense_seq2)
+#    main_dense = Dense(n_class, activation=final_act)(dropout_seq2)
+#    model = Model(inputs=[input_seq], outputs=[main_dense])
+#    print(model.summary())
+    
+    #adamm = Adam()
+#    adamm = optimizer
+#    model.compile(loss='categorical_crossentropy', optimizer = adamm, metrics=['accuracy'])
+    
+    # saving the model
+#    file_model = os.path.join(absPath, 'data/', folder, 'model.h5')
+
+#    model.save(file_model)
+#    return model
+
 def building_2dense_model_task2(max_len, dict_size, number_neurons, n_class, drop_per, drop_hid, final_act, folder, 
                                 optimizer=Adam()):
     """"Builds a model with two Dense layers whose number of neurons are specified in decreasing order in number_neurons"""
     input_seq = Input(shape=(max_len, dict_size), dtype='float32')
     dropout_seq = Dropout(drop_per)(input_seq)
-    flatten_seq = Flatten()(dropout_seq)
+    
     #Denses
-    dense_seq1 = Dense(number_neurons[0], activation='relu')(flatten_seq)
+    dense_seq1 = Dense(number_neurons[0], activation='relu')(dropout_seq)
     dropout_seq1 = Dropout(drop_hid)(dense_seq1)
     dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
-    main_dense = Dense(n_class, activation=final_act)(dropout_seq2)
+    flatten_seq = Flatten()(dropout_seq2)
+    main_dense = Dense(n_class, activation=final_act)(flatten_seq2)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     

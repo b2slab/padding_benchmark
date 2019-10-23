@@ -62,8 +62,8 @@ def count_time(start, end, folder, model_type, task):
     print("It has been ", str(datetime.timedelta(seconds=(end - start))))
     timee = (end - start)/3600
     #if the folder doesn't exist, create it
-    if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/'])):
-        os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, model_type, '/']))
+    if not os.path.exists(''.join(string for string in [absPath, 'data/results/', folder, task, model_type, '/'])):
+        os.makedirs(''.join(string for string in [absPath, 'data/results/', folder, task, model_type, '/']))
     file_time = ''.join(string for string in [absPath, 'data/results/', folder, task, model_type, '/time.pickle'])
 
     with open(file_time, "wb") as output_file:

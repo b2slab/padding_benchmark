@@ -155,6 +155,8 @@ def plot_pca(df, pca, type_plot, list_paddings=None):
         clb=fig.colorbar(im, cax=cax)  
         clb.ax.set_title("Protein sequence length")
         ax.grid()
+    #file_fig = ''.join(string for string in [absPath,'data/results/', folder, task, 'pcaActivations_', typle_plot.png'])
+    #plt.savefig(file_fig)
     
 #function to select proteins of the test set with an specific enzimatic label
 def find_prot_labeled(folder, enz_label, quant=2, task = "task2", labels_label = "labels_task2"):
@@ -296,3 +298,15 @@ def myplot(score,coeff,labels=None):
     plt.xlabel("PC{}".format(1))
     plt.ylabel("PC{}".format(2))
     plt.grid()
+    
+def saving_activations_plot(packagee, type_plot, folder, task, p=None):
+    if packagee == "plt":
+        extension = ".png"
+        file_fig = ''.join(string for string in [absPath,'data/results/', folder, task, 'pcaActivations_',
+                                         type_plot, extension])
+        plt.savefig(file_fig)
+    else:
+        extension = ".pdf"
+        path_fig = ''.join(string for string in [absPath,'data/results/', folder, task])
+        file_fig = ''.join(string for string in ['pcaActivations_', type_plot, extension])
+        p.save(path = path_fig, format = 'pdf', dpi=300, filename=file_fig)
