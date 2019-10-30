@@ -312,5 +312,23 @@ def processing_auc_dodge(list_paddings, folders, names_folders,task, nfolds):
         auc = df_auc.reset_index().drop("index",1)#.melt(id_vars="index")
         auc["architecture"] = names_folders[idx]
         auc_list.append(auc)
+        
+def formatting_table(df_task1, df_task2, metrics, var_padding, var_val):
+    """Saving results to a formatted table"""
+    df_task1['task'] = "task1"
+    df_task2['task'] = "task2"
+    #joining both dataframes
+    df_final = pd.concat([df_task1, df_task2])
+    df_group = df_final.groupby(["task", "architecture", var_padding], 
+                                as_index=False).agg({var_val:['mean','std']})
+    df_group.columns = ['_'.join(col) for col in df_group.columns]
+    df_group[metrics] = accu_group[['value_mean','value_std']].apply(lambda x : 
+                                                                          '{:0.2f} $\pm$ {:0.2f}'.format(x[0],x[1]), axis=1)
+    var_padding_ = var_padding + "_"
+    df_def =df_group.loc[:,['task_', 'architecture_', var_padding_, 
+                                 metrics]].set_index(['task_', 'architecture_', var_padding_]).unstack(level=-1)
+    df_def_t = df_def.transpose()
+    print(tabulate(df_def_t, headers="keys", tablefmt='latex_raw'))
+    return df_def_t
 
     return auc_list
