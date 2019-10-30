@@ -300,3 +300,17 @@ def plotting_scores_arch(df, nfolds, task_string, task, type_avg="weighted avg")
         os.makedirs(file_met)
     p.save(path = file_met, format = 'pdf', dpi=300, filename="scores_architecture.pdf")
     return p
+
+
+def processing_auc_dodge(list_paddings, folders, names_folders,task, nfolds):
+    """It process the saved metrics for AUC from the task 1 models and returns a dataframe with processed AUC on test"""
+    auc_list = []
+    for idx, folder in enumerate(folders):
+        metrics, k = collecting_metrics_folds("auc", list_paddings, folder, task, nfolds)
+        df_auc = processing_roc_auc(metrics, "auc", list_paddings)
+        
+        auc = df_auc.reset_index().drop("index",1)#.melt(id_vars="index")
+        auc["architecture"] = names_folders[idx]
+        auc_list.append(auc)
+
+    return auc_list

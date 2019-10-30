@@ -224,7 +224,7 @@ def building_2dense_model_task2(max_len, dict_size, number_neurons, n_class, dro
     dense_seq2 = Dense(number_neurons[1], activation='relu')(dropout_seq1)
     dropout_seq2 = Dropout(drop_hid)(dense_seq2)
     flatten_seq = Flatten()(dropout_seq2)
-    main_dense = Dense(n_class, activation=final_act)(flatten_seq2)
+    main_dense = Dense(n_class, activation=final_act)(flatten_seq)
     model = Model(inputs=[input_seq], outputs=[main_dense])
     print(model.summary())
     
