@@ -322,7 +322,7 @@ def formatting_table(df_task1, df_task2, metrics, var_padding, var_val):
     df_group = df_final.groupby(["task", "architecture", var_padding], 
                                 as_index=False).agg({var_val:['mean','std']})
     df_group.columns = ['_'.join(col) for col in df_group.columns]
-    df_group[metrics] = accu_group[['value_mean','value_std']].apply(lambda x : 
+    df_group[metrics] = df_group[['value_mean','value_std']].apply(lambda x : 
                                                                           '{:0.2f} $\pm$ {:0.2f}'.format(x[0],x[1]), axis=1)
     var_padding_ = var_padding + "_"
     df_def =df_group.loc[:,['task_', 'architecture_', var_padding_, 
