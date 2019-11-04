@@ -314,7 +314,7 @@ def processing_auc_dodge(list_paddings, folders, names_folders,task, nfolds):
         auc_list.append(auc)
         
 def formatting_table(df_task1, df_task2, metrics, var_padding, var_val):
-    """Saving results to a formatted table"""
+    """ Saving results to a formatted table"""
     df_task1['task'] = "task1"
     df_task2['task'] = "task2"
     #joining both dataframes
@@ -327,8 +327,6 @@ def formatting_table(df_task1, df_task2, metrics, var_padding, var_val):
     var_padding_ = var_padding + "_"
     df_def =df_group.loc[:,['task_', 'architecture_', var_padding_, 
                                  metrics]].set_index(['task_', 'architecture_', var_padding_]).unstack(level=-1)
-    df_def_t = df_def.transpose()
+    df_def_t = df_def.stack().unstack(level=1)
     print(tabulate(df_def_t, headers="keys", tablefmt='latex_raw'))
     return df_def_t
-
-    return auc_list
