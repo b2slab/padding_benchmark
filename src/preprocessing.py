@@ -237,8 +237,13 @@ def counting_multilabel(df):
         new_dict = first_label
     unique_ecs = list(labels_separated[0].unique())
     print("The unique labels are ", unique_ecs)
-    plt.bar(range(len(list(new_dict.keys()))), list(new_dict.values()), color='g', tick_label=list(new_dict.keys()))
-    plt.title("Histogram of firsts digits of EC number (nan are not enzymes)")
+    labelss = list(new_dict.keys())
+    for idx, i in enumerate(labelss):
+        if i == "nan":
+            labelss[idx] = "non enzyme"
+    plt.figure(figsize=(8,5))
+    plt.bar(range(len(list(new_dict.keys()))), list(new_dict.values()), color='g', tick_label=labelss)
+    plt.title("Distribution of first digits of EC number")
     print(new_dict)
     plt.show()
 

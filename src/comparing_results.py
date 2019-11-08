@@ -312,6 +312,35 @@ def processing_auc_dodge(list_paddings, folders, names_folders,task, nfolds):
         auc = df_auc.reset_index().drop("index",1)#.melt(id_vars="index")
         auc["architecture"] = names_folders[idx]
         auc_list.append(auc)
+
+    return auc_list
+
+def plotting_f1_macro(df, nfolds, task_string, task, type_avg="macro avg"):
+    """Plotting F1-score macro average into comparison boxplots"""
+    #df = df[df.enz_type.isin(["micro avg", "macro avg", "weighted avg"])]
+    df = df[df.enz_type == type_avg]
+    df = df[df.variable == "f1-score"]
+    p = (ggplot(df, aes(x='type_padding', y="value", fill='type_padding'))
+         +geom_boxplot(outlier_size=1, position="dodge")
+         + scale_fill_brewer(palette="Set3", type='qual')
+         +theme_bw()
+         +theme(figure_size=(12,25), aspect_ratio=1, legend_title=element_blank(), axis_text_y =element_text(size=12),
+                legend_text=element_text(size=12), strip_text_x = element_text(size=10), 
+                axis_text_x = element_blank(), #element_text(angle=90, hjust=1),
+               strip_text_y = element_text(size=15), plot_title = element_text(size=14), axis_title_y = element_blank(),
+               axis_title_x = element_blank(), legend_key_size = 24, legend_position="bottom", 
+                legend_box="horizontal")
+         #+ facet_grid("variable~enz_type")
+         + facet_grid(".~architecture")
+         + ggtitle("%s - F1-score on test(%i holdouts)" %(task_string, nfolds))
+         + guides(fill=guide_legend(nrow=2))
+    )
+    
+    file_met = ''.join(string for string in [absPath,'data/results/', task])
+    if not os.path.exists(file_met):
+        os.makedirs(file_met)
+    p.save(path = file_met, format = 'pdf', dpi=300, filename="f1_macro_comparison.pdf")
+    return p
         
 def formatting_table(df_task1, df_task2, metrics, var_padding, var_val):
     """ Saving results to a formatted table"""
@@ -323,7 +352,7 @@ def formatting_table(df_task1, df_task2, metrics, var_padding, var_val):
                                 as_index=False).agg({var_val:['mean','std']})
     df_group.columns = ['_'.join(col) for col in df_group.columns]
     df_group[metrics] = df_group[['value_mean','value_std']].apply(lambda x : 
-                                                                          '{:0.2f} $\pm$ {:0.2f}'.format(x[0],x[1]), axis=1)
+                                                                          '{:0.3f} $\pm$ {:0.3f}'.format(x[0],x[1]), axis=1)
     var_padding_ = var_padding + "_"
     df_def =df_group.loc[:,['task_', 'architecture_', var_padding_, 
                                  metrics]].set_index(['task_', 'architecture_', var_padding_]).unstack(level=-1)
