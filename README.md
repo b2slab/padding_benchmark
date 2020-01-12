@@ -29,14 +29,10 @@ The project is almost entirely coded in Python 3.6.7.  R version 3.4.4 has been 
 ## System requirements
 The runs have been executed on the following hardware from the B2SLab (Universitat Politecnica de Catalunya):
 - *tob*:
-      8 threads
-      32GB RAM
-      NVIDIA TITAN Xp GeForce GTX 1070
+      8 threads, 32GB RAM, NVIDIA TITAN Xp GeForce GTX 1070
 
 - *lapsus*:
-      12 threads
-      32GB RAM
-      2 x NVIDIA GeForce GTX 1070
+      12 threads, 32GB RAM, 2 x NVIDIA GeForce GTX 1070
 
 ## Considerations
 - The absPath variable at the beginning of each notebook and src file should be changed once the repository is cloned to the correct path in each case.
