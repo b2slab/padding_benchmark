@@ -14,13 +14,9 @@ class Target(object):
     def __init__(self, seq):
         self.seq = seq
         
-# el diccionario deberia estar hecho de la concatenacion de todos los aminoacidos
     def creating_dict(self):
         """ Creates a dictionary from amino acids (string characters) to integer numbers
         from the sequence of a target. It returns the dictionary and the length of the dictionary """
-        #Don't know why, but sequence is numpy.bytes_ type
-        #sequence = self.seq.decode('UTF-8')
-        #aminoacids = list(sequence)
         aminoacids = list(self.seq)
         unique_aas = sorted(list(set(aminoacids)))
         len_aas = len(unique_aas)
