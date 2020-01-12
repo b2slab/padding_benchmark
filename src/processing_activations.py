@@ -23,7 +23,7 @@ import datetime
 from plotnine import *
 
 #root
-absPath = '/home/angela/padding_EBI/'
+absPath = '/home/angela/padding_benchmark/'
 sys.path.insert(0, absPath)
 
 from src.Target import Target

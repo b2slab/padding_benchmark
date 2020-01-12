@@ -4,7 +4,7 @@
 # weights-improvement-xxxx.hdf5 by keeping only the maximum
 # accuracy in xxxx
 
-dir.clean <- "~angela/padding_EBI/data/checkpoint/EC_number"
+dir.clean <- "~angela/padding_benchmark/data/checkpoint/EC_number"
 # dir.clean <- "task"
 dirs <- list.dirs(dir.clean, recursive = TRUE)
 

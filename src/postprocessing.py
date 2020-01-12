@@ -24,7 +24,7 @@ from sklearn import metrics
 from collections import Counter
 
 #root
-absPath = '/home/angela/padding_EBI/'
+absPath = '/home/angela/padding_benchmark/'
 sys.path.insert(0, absPath)
 
 from src.Target import Target

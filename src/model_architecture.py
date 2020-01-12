@@ -21,7 +21,7 @@ from keras.optimizers import Adam
 from keras.backend.tensorflow_backend import set_session 
 
 #root
-absPath = '/home/angela/padding_EBI/'
+absPath = '/home/angela/padding_benchmark/'
 sys.path.insert(0, absPath)
 
 from src.Target import Target

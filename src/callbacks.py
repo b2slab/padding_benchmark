@@ -19,7 +19,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.cm as cm
 
 #root
-absPath = '/home/angela/padding_EBI/'
+absPath = '/home/angela/padding_benchmark/'
 sys.path.insert(0, absPath)
 
 from src.Target import Target
