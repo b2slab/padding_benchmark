@@ -190,7 +190,7 @@ def processing_metrics_results(list_paddings, folder, task, nfolds):
     #processing test accuracy
     accu = accu.reset_index().melt(id_vars='index')
     return scores_final, accu
-#revisar1!!
+
 def plotting_scores_boxplots(df, folder, nfolds, task_string, task):
     """Plotting F1-score/precision/recall on test values in boxplots"""
     p = (ggplot(df, aes(x='type_padding', y="value", fill='type_padding'))
