@@ -104,5 +104,4 @@ venv.bak/
 .mypy_cache/
 
 #FOLDERS
-raw_data/
 data/
