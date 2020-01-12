@@ -247,16 +247,16 @@ def giffing_weights(folder, layers, model_type):
         #pathh_gif = os.path.join(''.join(string for string in [absPath, 'data/weights/',  folder, '/', model_type, '/gifs/', i, '/', i, '.gif']))
         #! convert -delay 40 "{pathh}" "{pathh_gif}"                     
 
-def processing_results(folder, task, model_type, idx, i_test, labels):
+def processing_results(folder, folder_arch, task, model_type, idx, i_test, labels):
     """Processing results (all together)"""
     dicti = creating_dict()
-    his_folder = ''.join(string for string in [absPath, 'data/results/', folder, task, model_type, 
+    his_folder = ''.join(string for string in [absPath, 'data/results/', folder_arch, task, model_type, 
                                                    '/', str(idx)])
     history = plot_history(his_folder)
-    path_to_cp = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, model_type, 
+    path_to_cp = ''.join(string for string in [absPath, 'data/checkpoint/', folder_arch, task, model_type, 
                                             '/', str(idx)])
     model, best_path = load_best_model(history, path_to_cp)
-    cps_loc = ''.join(string for string in [absPath, 'data/checkpoint/', folder, task, model_type, 
+    cps_loc = ''.join(string for string in [absPath, 'data/checkpoint/', folder_arch, task, model_type, 
                                             '/', str(idx), '/*.hdf5'])
     #removing the rest of weights
     fileList = glob.glob(cps_loc, recursive=True)
