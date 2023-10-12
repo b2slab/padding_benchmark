@@ -5,6 +5,8 @@ The data used in this study consists on all the reviewed protein sequences of th
 
 The project is almost entirely coded in Python 3.6.7.  R version 3.4.4 has been used for building the explanatory linear models (notebooks 07 and 09). 
 
+The findings of this analysis are explained in the following article: Lopez-del Rio, A., Martin, M., Perera-Lluna, A. et al. Effect of sequence padding on the performance of deep learning models in archaeal protein functional prediction. Sci Rep 10, 14634 (2020). https://doi.org/10.1038/s41598-020-71450-8.
+
 ## Structure
 - Functions are defined in the src/ folder (.py and .R files)
 - The workflow of the analysis is applied through Jupyter Notebooks in the notebooks/ folder. The files are preceded by a number that indicates the chronological order of their execution.
